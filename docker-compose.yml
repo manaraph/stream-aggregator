@@ -10,6 +10,11 @@ services:
       - ./mosquitto/data:/mosquitto/data
       - ./mosquitto/log:/mosquitto/log
 
+  generator:
+    build: ./generator
+    depends_on:
+      - mosquitto
+
   ingestion:
     build: ./ingestion
     environment:
