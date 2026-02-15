@@ -40,6 +40,6 @@ func main() {
 		client.Publish("sensors/temperature", 0, false, b)
 
 		log.Println("Published:", string(b))
-		time.Sleep(1 * time.Second)
+		time.Sleep(3 * time.Second)
 	}
 }

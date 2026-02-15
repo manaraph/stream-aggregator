@@ -1,7 +1,14 @@
-FROM golang:1.25
+FROM golang:1.25.7-alpine AS builder
 WORKDIR /app
-COPY go.mod ./
+ENV GO111MODULE=on
+
+COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN go build -o ingestion
-CMD ["./ingestion"]
+
+RUN go build -o /bin/ingestion ./ingestion
+
+FROM alpine:3.18
+WORKDIR /app
+COPY --from=builder /bin/ingestion /bin/ingestion
+ENTRYPOINT ["/bin/ingestion"]

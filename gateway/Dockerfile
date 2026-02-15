@@ -1,0 +1,24 @@
+FROM golang:1.25.7-alpine AS builder
+
+# Install git for module fetching
+RUN apk add --no-cache git
+
+WORKDIR /app
+ENV GO111MODULE=on
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+
+RUN go build -o /bin/gateway ./gateway
+
+FROM alpine:3.18 AS runtime
+WORKDIR /app
+
+COPY --from=builder /bin/gateway /bin/gateway
+
+# Expose ports: gRPC 50051 + WebSocket 8080
+EXPOSE 50051 8080
+
+ENTRYPOINT ["/bin/gateway"]
