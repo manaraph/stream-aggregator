@@ -42,6 +42,9 @@ services:
       - mosquitto
     networks:
       - app-network
+    environment:
+      - MQTT_BROKER
+      - GENERATOR_ID
 
   ingestion:
     build:

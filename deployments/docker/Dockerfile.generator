@@ -6,7 +6,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 
-RUN go build -o /bin/generator ./generator
+RUN go build -o /bin/generator ./cmd/generator
 
 FROM alpine:3.18
 WORKDIR /app

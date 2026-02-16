@@ -5,17 +5,12 @@ import (
 	"os"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"github.com/joho/godotenv"
 )
 
-func InitMQTTClient(clientId string) (*mqtt.Client, error) {
-	if err := godotenv.Load(); err != nil {
-		return nil, errors.New("No .env file found, reading from env vars")
-	}
-
+func InitMQTTClient(clientId string) (mqtt.Client, error) {
 	broker := os.Getenv("MQTT_BROKER")
 	if broker == "" {
-		broker = "tcp://mosquitto:1883"
+		return nil, errors.New("MQTT_BROKER not defined")
 	}
 
 	opts := mqtt.NewClientOptions().AddBroker(broker).SetClientID(clientId)
@@ -24,5 +19,5 @@ func InitMQTTClient(clientId string) (*mqtt.Client, error) {
 		return nil, token.Error()
 	}
 
-	return &mclient, nil
+	return mclient, nil
 }
