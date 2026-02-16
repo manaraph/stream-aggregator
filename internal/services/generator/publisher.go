@@ -25,10 +25,10 @@ func Start() {
 		return
 	}
 
-	initSensorDataGenerator(mclient)
+	publishSensorData(mclient)
 }
 
-func initSensorDataGenerator(client mqtt.Client) {
+func publishSensorData(client mqtt.Client) {
 	for {
 		e := domain.Sensor{
 			Sensor:    "sensor-" + string(rune('A'+rand.Intn(5))),
