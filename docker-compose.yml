@@ -36,7 +36,7 @@ services:
   generator:
     build:
       context: .
-      dockerfile: generator/Dockerfile
+      dockerfile: deployments/docker/Dockerfile.generator
     container_name: generator-service
     depends_on:
       - mosquitto

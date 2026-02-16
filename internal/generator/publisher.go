@@ -17,6 +17,7 @@ func Start() {
 		log.Fatalf("Failed to connect to MQTT broker: %v", err)
 		return
 	}
+
 	initSensorDataGenerator(*mclient)
 }
 
