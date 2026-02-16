@@ -40,6 +40,6 @@ func publishSensorData(client mqtt.Client) {
 		client.Publish("sensors/temperature", 0, false, b)
 
 		log.Println("Published:", string(b))
-		time.Sleep(time.Second)
+		time.Sleep(3 * time.Second)
 	}
 }

@@ -39,9 +39,5 @@ func handleMessage(c mqtt.Client, m mqtt.Message) {
 		return
 	}
 
-	processEvent(e)
-}
-
-func processEvent(e domain.Sensor) {
-	log.Printf("Processed event: sensor=%s value=%.2f", e.Sensor, e.Value)
+	forwardEvent(e)
 }

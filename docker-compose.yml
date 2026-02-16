@@ -21,10 +21,11 @@ services:
   gateway:
     build:
       context: .
-      dockerfile: gateway/Dockerfile
+      dockerfile: deployments/docker/Dockerfile.gateway
     container_name: gateway-service
     ports:
       - '8080:8080'
+      - '50051:50051'
     networks:
       - app-network
     healthcheck:
@@ -49,7 +50,7 @@ services:
   ingestion:
     build:
       context: .
-      dockerfile: ingestion/Dockerfile
+      dockerfile: deployments/docker/Dockerfile.ingestion
     container_name: ingestion-service
     depends_on:
       - mosquitto

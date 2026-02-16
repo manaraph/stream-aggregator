@@ -1,6 +1,6 @@
 package main
 
-import "github.com/manaraph/stream-aggregator/internal/generator"
+import "github.com/manaraph/stream-aggregator/internal/services/generator"
 
 func main() {
 	generator.Start()
