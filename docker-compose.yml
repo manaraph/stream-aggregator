@@ -55,8 +55,9 @@ services:
       - mosquitto
       - gateway
     environment:
-      MQTT_BROKER: 'tcp://mosquitto:1883'
-      GATEWAY_ADDR: 'gateway:50051'
+      - MQTT_BROKER
+      - INGESTION_ID
+      - GATEWAY_ADDR
     networks:
       - app-network
 
