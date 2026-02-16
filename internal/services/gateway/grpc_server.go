@@ -13,10 +13,11 @@ type sensorServer struct {
 	pb.UnimplementedSensorServiceServer
 }
 
-func (s *sensorServer) StreamEvents(stream pb.SensorService_IngestSensorsServer) error {
+func (s *sensorServer) IngestSensors(stream pb.SensorService_IngestSensorsServer) error {
 	for {
 		e, err := stream.Recv()
 		if err == io.EOF {
+			log.Println("Client closed stream")
 			return stream.SendAndClose(&pb.IngestResponse{Success: true, Message: e.Sensor})
 		}
 		if err != nil {
@@ -26,7 +27,6 @@ func (s *sensorServer) StreamEvents(stream pb.SensorService_IngestSensorsServer)
 
 		log.Printf("gRPC event: %+v", e)
 
-		// broadcast to WebSocket clients
 		broadcast <- e
 	}
 }

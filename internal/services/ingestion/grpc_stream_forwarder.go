@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/manaraph/stream-aggregator/internal/domain"
@@ -12,43 +13,74 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-var stream pb.SensorService_IngestSensorsClient
+var (
+	stream   pb.SensorService_IngestSensorsClient
+	mu       sync.Mutex
+	ssClient pb.SensorServiceClient
+)
 
-func init() {
+func connect() {
 	addr := os.Getenv("GATEWAY_ADDR")
 	if addr == "" {
-		addr = "gateway:50051"
+		log.Fatalf("GATEWAY_ADDR not defined")
+		return
 	}
 
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
-		panic(err)
+		log.Println("gRPC dial failed:", err)
+		time.Sleep(time.Second)
+		connect()
+		return
 	}
 
-	client := pb.NewSensorServiceClient(conn)
+	ssClient = pb.NewSensorServiceClient(conn)
+	openStream()
+}
+
+func openStream() {
+	mu.Lock()
+	defer mu.Unlock()
 
 	ctx := context.Background()
-	s, err := client.IngestSensors(ctx)
+	s, err := ssClient.IngestSensors(ctx)
 	if err != nil {
-		panic(err)
+		log.Println("Stream open failed:", err)
+		time.Sleep(time.Second)
+		openStream()
+		return
 	}
+
 	stream = s
+	log.Println("gRPC stream connected")
+}
+
+func init() {
+	connect()
 }
 
 func forwardEvent(data domain.Sensor) {
+	mu.Lock()
+	s := stream
+	mu.Unlock()
+
+	if s == nil {
+		return
+	}
+
 	t, err := time.Parse(time.RFC3339, data.Timestamp.Format(time.RFC3339))
 	if err != nil {
 		log.Println("Invalid timestamp:", data.Timestamp)
 	}
 
-	err = stream.Send(&pb.SensorData{
+	err = s.Send(&pb.SensorData{
 		Sensor:    data.Sensor,
 		Value:     data.Value,
 		Timestamp: timestamppb.New(t),
 	})
 
 	if err != nil {
-		log.Println("gRPC stream send failed:", err)
-		time.Sleep(3 * time.Second) // basic backoff
+		log.Println("gRPC send failed:", err)
+		openStream() // reconnect
 	}
 }
