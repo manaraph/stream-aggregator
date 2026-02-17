@@ -21,10 +21,11 @@ services:
   gateway:
     build:
       context: .
-      dockerfile: gateway/Dockerfile
+      dockerfile: deployments/docker/Dockerfile.gateway
     container_name: gateway-service
     ports:
       - '8080:8080'
+      - '50051:50051'
     networks:
       - app-network
     healthcheck:
@@ -36,24 +37,28 @@ services:
   generator:
     build:
       context: .
-      dockerfile: generator/Dockerfile
+      dockerfile: deployments/docker/Dockerfile.generator
     container_name: generator-service
     depends_on:
       - mosquitto
     networks:
       - app-network
+    environment:
+      - MQTT_BROKER
+      - GENERATOR_ID
 
   ingestion:
     build:
       context: .
-      dockerfile: ingestion/Dockerfile
+      dockerfile: deployments/docker/Dockerfile.ingestion
     container_name: ingestion-service
     depends_on:
       - mosquitto
       - gateway
     environment:
-      MQTT_BROKER: 'tcp://mosquitto:1883'
-      GATEWAY_ADDR: 'gateway:50051'
+      - MQTT_BROKER
+      - INGESTION_ID
+      - GATEWAY_ADDR
     networks:
       - app-network
 
