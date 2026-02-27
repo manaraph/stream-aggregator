@@ -39,5 +39,5 @@ func handleMessage(c mqtt.Client, m mqtt.Message) {
 		return
 	}
 
-	forwardEvent(e)
+	EnqueueEvent(e)
 }

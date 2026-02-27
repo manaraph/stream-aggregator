@@ -7,6 +7,7 @@ import (
 
 func StartHTTP() {
 	http.HandleFunc("/ws", wsHandler)
+
 	http.HandleFunc("/health", func(w http.ResponseWriter, _ *http.Request) {
 		w.Write([]byte("ok"))
 	})

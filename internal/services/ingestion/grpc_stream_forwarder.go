@@ -15,8 +15,8 @@ import (
 
 var (
 	stream   pb.SensorService_IngestSensorsClient
-	mu       sync.Mutex
 	ssClient pb.SensorServiceClient
+	mu       sync.Mutex
 )
 
 func connect() {
@@ -29,7 +29,7 @@ func connect() {
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
 		log.Println("gRPC dial failed:", err)
-		time.Sleep(time.Second)
+		time.Sleep(3 * time.Second)
 		connect()
 		return
 	}
@@ -46,7 +46,7 @@ func openStream() {
 	s, err := ssClient.IngestSensors(ctx)
 	if err != nil {
 		log.Println("Stream open failed:", err)
-		time.Sleep(time.Second)
+		time.Sleep(3 * time.Second)
 		openStream()
 		return
 	}
