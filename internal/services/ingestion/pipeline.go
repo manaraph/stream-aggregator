@@ -5,6 +5,7 @@ import (
 	"os"
 	"strconv"
 	"sync/atomic"
+	"time"
 
 	"github.com/manaraph/stream-aggregator/internal/domain"
 )
@@ -58,16 +59,16 @@ func EnqueueEvent(e domain.Sensor) {
 	}
 }
 
-// func () {
-//     ticker := time.NewTicker(2 * time.Second)
-//     for range ticker.C {
-//         used := len(sensorQueue)
-//         capacity := cap(sensorQueue)
-//         percent := float64(used) / float64(capacity) * 100
-//         p := atomic.LoadUint64(&processed)
-//         d := atomic.LoadUint64(&dropped)
+func QueueStatus() {
+	ticker := time.NewTicker(5 * time.Second)
+	for range ticker.C {
+		used := len(eventQueue)
+		capacity := cap(eventQueue)
+		percent := float64(used) / float64(capacity) * 100
+		p := atomic.LoadUint64(&processed)
+		d := atomic.LoadUint64(&dropped)
 
-//         log.Printf("QUEUE %d/%d (%.1f%%) processed=%d dropped=%d",
-//             used, capacity, percent, p, d)
-//     }
-// }()
+		log.Printf("QUEUE %d/%d (%.1f%%) processed=%d dropped=%d",
+			used, capacity, percent, p, d)
+	}
+}
