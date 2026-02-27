@@ -8,14 +8,14 @@ import (
 	"time"
 
 	"github.com/manaraph/stream-aggregator/internal/domain"
-	pb "github.com/manaraph/stream-aggregator/proto"
+	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var (
-	stream   pb.SensorService_IngestSensorsClient
-	ssClient pb.SensorServiceClient
+	stream   streamv1.SensorService_IngestSensorClient
+	ssClient streamv1.SensorServiceClient
 	mu       sync.Mutex
 )
 
@@ -34,7 +34,7 @@ func connect() {
 		return
 	}
 
-	ssClient = pb.NewSensorServiceClient(conn)
+	ssClient = streamv1.NewSensorServiceClient(conn)
 	openStream()
 }
 
@@ -43,7 +43,7 @@ func openStream() {
 	defer mu.Unlock()
 
 	ctx := context.Background()
-	s, err := ssClient.IngestSensors(ctx)
+	s, err := ssClient.IngestSensor(ctx)
 	if err != nil {
 		log.Println("Stream open failed:", err)
 		time.Sleep(3 * time.Second)
@@ -73,7 +73,7 @@ func forwardEvent(data domain.Sensor) {
 		log.Println("Invalid timestamp:", data.Timestamp)
 	}
 
-	err = s.Send(&pb.SensorData{
+	err = s.Send(&streamv1.SensorEventRequest{
 		Sensor:    data.Sensor,
 		Value:     data.Value,
 		Timestamp: timestamppb.New(t),

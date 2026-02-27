@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package stream.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1;streamv1";
+
+service SensorService {
+  rpc IngestSensor(stream SensorEventRequest) returns (IngestResponse);
+}
+
+message SensorEventRequest {
+  string sensor = 1;                    
+  double value = 2;                     
+  google.protobuf.Timestamp timestamp = 3; 
+}
+
+message IngestResponse {
+  bool success = 1;
+  string message = 2;
+}

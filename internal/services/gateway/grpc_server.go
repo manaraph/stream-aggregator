@@ -5,20 +5,20 @@ import (
 	"log"
 	"net"
 
-	pb "github.com/manaraph/stream-aggregator/proto"
+	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 	"google.golang.org/grpc"
 )
 
 type sensorServer struct {
-	pb.UnimplementedSensorServiceServer
+	streamv1.UnimplementedSensorServiceServer
 }
 
-func (s *sensorServer) IngestSensors(stream pb.SensorService_IngestSensorsServer) error {
+func (s *sensorServer) IngestSensors(stream streamv1.SensorService_IngestSensorServer) error {
 	for {
 		e, err := stream.Recv()
 		if err == io.EOF {
 			log.Println("Client closed stream")
-			return stream.SendAndClose(&pb.IngestResponse{Success: true, Message: e.Sensor})
+			return stream.SendAndClose(&streamv1.IngestResponse{Success: true, Message: e.Sensor})
 		}
 		if err != nil {
 			log.Println("Stream error:", err)
@@ -34,7 +34,7 @@ func (s *sensorServer) IngestSensors(stream pb.SensorService_IngestSensorsServer
 func StartGRPC() {
 	lis, _ := net.Listen("tcp", ":50051")
 	grpcServer := grpc.NewServer()
-	pb.RegisterSensorServiceServer(grpcServer, &sensorServer{})
+	streamv1.RegisterSensorServiceServer(grpcServer, &sensorServer{})
 
 	log.Println("gRPC streaming on :50051")
 	grpcServer.Serve(lis)

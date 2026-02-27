@@ -1,6 +1,6 @@
 package gateway
 
-import pb "github.com/manaraph/stream-aggregator/proto"
+import streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 
 var clients = make(map[*Client]bool)
-var broadcast = make(chan *pb.SensorData)
+var broadcast = make(chan *streamv1.SensorEventRequest)
