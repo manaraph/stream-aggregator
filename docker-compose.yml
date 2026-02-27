@@ -46,6 +46,7 @@ services:
     environment:
       - MQTT_BROKER
       - GENERATOR_ID
+      - PUBLISH_RATE
 
   ingestion:
     build:
@@ -59,6 +60,8 @@ services:
       - MQTT_BROKER
       - INGESTION_ID
       - GATEWAY_ADDR
+      - INGESTION_WORKERS
+      - INGESTION_QUEUE_SIZE
     networks:
       - app-network
 
