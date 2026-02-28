@@ -13,7 +13,7 @@ type sensorServer struct {
 	streamv1.UnimplementedSensorServiceServer
 }
 
-func (s *sensorServer) IngestSensors(stream streamv1.SensorService_IngestSensorServer) error {
+func (s *sensorServer) IngestSensor(stream streamv1.SensorService_IngestSensorServer) error {
 	for {
 		e, err := stream.Recv()
 		if err == io.EOF {
