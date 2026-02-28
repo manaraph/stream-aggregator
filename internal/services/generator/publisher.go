@@ -35,7 +35,6 @@ func (p *Publisher) Run() {
 		}
 
 		p.SendEvent(event)
-		log.Println("Data published", event)
 	}
 }
 

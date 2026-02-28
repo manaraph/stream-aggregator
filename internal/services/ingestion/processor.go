@@ -34,7 +34,6 @@ func (p *Processor) HandleMessage(c mqtt.Client, m mqtt.Message) {
 		log.Println("Invalid event:", err)
 		return
 	}
-	log.Println("Subscribed - event:", e)
 	p.EnqueueEvent(e)
 }
 
