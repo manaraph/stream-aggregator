@@ -2,6 +2,7 @@ package grpcapi
 
 import (
 	"io"
+	"log"
 
 	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 	"github.com/manaraph/stream-aggregator/pkg/ws"
@@ -22,6 +23,8 @@ func (s *Server) IngestSensor(stream streamv1.SensorService_IngestSensorServer) 
 		if err != nil {
 			return err
 		}
+		log.Printf("gRPC event: %+v", e)
+
 		s.Hub.BroadcastEvent(e)
 	}
 }

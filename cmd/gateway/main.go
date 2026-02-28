@@ -1,9 +1,26 @@
 package main
 
-import "github.com/manaraph/stream-aggregator/internal/services/gateway"
+import (
+	"log"
+	"os"
+
+	"github.com/manaraph/stream-aggregator/internal/services/gateway"
+)
 
 func main() {
-	go gateway.StartBroadcastLoop()
-	go gateway.StartGRPC()
-	gateway.StartHTTP()
+	grpcPort := os.Getenv("GRPC_PORT")
+	if grpcPort == "" {
+		log.Fatalf("GRPC_PORT not defined")
+	}
+
+	httpPort := os.Getenv("HTTP_PORT")
+	if httpPort == "" {
+		log.Fatalf("HTTP_PORT not defined")
+	}
+
+	_, _ = gateway.NewGateway(grpcPort, httpPort)
+	log.Println("gRPC streaming on", grpcPort)
+	log.Println("HTTP on", httpPort)
+
+	select {}
 }

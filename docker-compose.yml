@@ -24,6 +24,9 @@ services:
     ports:
       - '8080:8080'
       - '50051:50051'
+    environment:
+      - GRPC_PORT
+      - HTTP_PORT
     networks:
       - app-network
     healthcheck:
