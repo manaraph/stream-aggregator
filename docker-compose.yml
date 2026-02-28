@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   mosquitto:
     image: eclipse-mosquitto:2.0
@@ -26,6 +24,9 @@ services:
     ports:
       - '8080:8080'
       - '50051:50051'
+    environment:
+      - GRPC_PORT
+      - HTTP_PORT
     networks:
       - app-network
     healthcheck:

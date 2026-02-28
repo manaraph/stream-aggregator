@@ -10,15 +10,10 @@ import (
 	"github.com/manaraph/stream-aggregator/internal/domain"
 )
 
-var (
-	eventQueue  chan domain.Sensor
-	workerCount = 4
-	queueSize   = 1000
-	processed   uint64
-	dropped     uint64
-)
+func (p *Processor) initPipeline() {
+	workerCount := 4
+	queueSize := 1000
 
-func init() {
 	if v := os.Getenv("INGESTION_WORKERS"); v != "" {
 		if n, err := strconv.Atoi(v); err == nil {
 			workerCount = n
@@ -30,45 +25,50 @@ func init() {
 		}
 	}
 
-	eventQueue = make(chan domain.Sensor, queueSize)
-}
+	p.eventQueue = make(chan domain.Sensor, queueSize)
 
-func StartPipeline() {
 	log.Printf("Starting ingestion pipeline: workers=%d queue=%d", workerCount, queueSize)
 
 	for i := 0; i < workerCount; i++ {
-		go worker(i)
+		go p.worker(i)
 	}
+
+	go p.queueStatus()
 }
 
-func worker(id int) {
+func (p *Processor) worker(id int) {
 	log.Printf("Worker %d started", id)
-	for e := range eventQueue {
-		forwardEvent(e)
+
+	for e := range p.eventQueue {
+		p.ForwardEvent(e)
 	}
 }
 
-func EnqueueEvent(e domain.Sensor) {
+func (p *Processor) EnqueueEvent(e domain.Sensor) {
 	select {
-	case eventQueue <- e:
-		atomic.AddUint64(&processed, 1)
+	case p.eventQueue <- e:
+		atomic.AddUint64(&p.processed, 1)
 	default:
-		// queue full -> drop event
 		log.Println("WARNING: ingestion queue full, dropping event")
-		atomic.AddUint64(&dropped, 1)
+		atomic.AddUint64(&p.dropped, 1)
 	}
 }
 
-func QueueStatus() {
+func (p *Processor) queueStatus() {
 	ticker := time.NewTicker(5 * time.Second)
+	defer ticker.Stop()
+
 	for range ticker.C {
-		used := len(eventQueue)
-		capacity := cap(eventQueue)
+		used := len(p.eventQueue)
+		capacity := cap(p.eventQueue)
 		percent := float64(used) / float64(capacity) * 100
-		p := atomic.LoadUint64(&processed)
-		d := atomic.LoadUint64(&dropped)
 
 		log.Printf("QUEUE %d/%d (%.1f%%) processed=%d dropped=%d",
-			used, capacity, percent, p, d)
+			used,
+			capacity,
+			percent,
+			atomic.LoadUint64(&p.processed),
+			atomic.LoadUint64(&p.dropped),
+		)
 	}
 }
