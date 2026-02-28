@@ -12,7 +12,7 @@ type Server struct {
 	Hub ws.Broadcaster
 }
 
-func (s *Server) StreamEvents(stream streamv1.SensorService_IngestSensorServer) error {
+func (s *Server) IngestSensor(stream streamv1.SensorService_IngestSensorServer) error {
 	for {
 		e, err := stream.Recv()
 		if err == io.EOF {

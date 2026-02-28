@@ -37,5 +37,8 @@ func (c *MQTTClient) Subscribe(topic string, handler func(c mqtt.Client, m mqtt.
 }
 
 func (c *MQTTClient) Close() error {
+	if c.mc != nil {
+		c.mc.Disconnect(250)
+	}
 	return nil
 }
