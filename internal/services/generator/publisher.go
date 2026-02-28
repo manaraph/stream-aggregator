@@ -8,12 +8,36 @@ import (
 	"strconv"
 	"time"
 
-	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"github.com/manaraph/stream-aggregator/internal/client"
 	"github.com/manaraph/stream-aggregator/internal/domain"
+	"github.com/manaraph/stream-aggregator/pkg/broker"
 )
 
 var interval time.Duration
+
+type Publisher struct {
+	B broker.Broker
+}
+
+func (p *Publisher) SendEvent(e domain.Sensor) error {
+	data, _ := json.Marshal(e)
+	return p.B.Publish("sensors/temperature", data)
+}
+
+func (p *Publisher) Run() {
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		event := domain.Sensor{
+			Sensor:    "sensor-" + string(rune('A'+rand.Intn(5))),
+			Value:     10 + rand.Float64()*20,
+			Timestamp: time.Now().UTC(),
+		}
+
+		p.SendEvent(event)
+		log.Println("Data published", event)
+	}
+}
 
 func init() {
 	rateStr := os.Getenv("PUBLISH_RATE")
@@ -27,38 +51,4 @@ func init() {
 
 	interval = time.Second / time.Duration(rate)
 	log.Printf("Publishing at %d events/sec (interval %v)", rate, interval)
-}
-
-func Start() {
-	clientId := os.Getenv("GENERATOR_ID")
-	if clientId == "" {
-		log.Fatalf("GENERATOR_ID not defined")
-		return
-	}
-
-	mclient, err := client.InitMQTTClient(clientId)
-	if err != nil {
-		log.Fatalf("Failed to connect to MQTT broker: %v", err)
-		return
-	}
-
-	publishSensorData(mclient)
-}
-
-func publishSensorData(client mqtt.Client) {
-	ticker := time.NewTicker(interval)
-	defer ticker.Stop()
-
-	for range ticker.C {
-		event := domain.Sensor{
-			Sensor:    "sensor-" + string(rune('A'+rand.Intn(5))),
-			Value:     10 + rand.Float64()*20,
-			Timestamp: time.Now().UTC(),
-		}
-
-		b, _ := json.Marshal(event)
-		client.Publish("sensors/temperature", 0, false, b)
-
-		log.Println("Published:", string(b))
-	}
 }
