@@ -12,7 +12,7 @@ import (
 )
 
 type StreamClient interface {
-	Send(*streamv1.SensorEventRequest) error
+	Send(*streamv1.IngestSensorRequest) error
 }
 
 type Processor struct {
@@ -38,7 +38,7 @@ func (p *Processor) HandleMessage(c mqtt.Client, m mqtt.Message) {
 }
 
 func (p *Processor) ForwardEvent(data domain.Sensor) {
-	err := p.S.Send(&streamv1.SensorEventRequest{
+	err := p.S.Send(&streamv1.IngestSensorRequest{
 		Sensor:    data.Sensor,
 		Value:     data.Value,
 		Timestamp: timestamppb.New(data.Timestamp),

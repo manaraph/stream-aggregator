@@ -7,16 +7,16 @@ import "google/protobuf/timestamp.proto";
 option go_package = "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1;streamv1";
 
 service SensorService {
-  rpc IngestSensor(stream SensorEventRequest) returns (IngestResponse);
+  rpc IngestSensor(stream IngestSensorRequest) returns (IngestSensorResponse);
 }
 
-message SensorEventRequest {
+message IngestSensorRequest {
   string sensor = 1;                    
   double value = 2;                     
   google.protobuf.Timestamp timestamp = 3; 
 }
 
-message IngestResponse {
+message IngestSensorResponse {
   bool success = 1;
   string message = 2;
 }

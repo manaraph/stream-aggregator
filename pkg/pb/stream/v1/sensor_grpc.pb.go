@@ -26,7 +26,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SensorServiceClient interface {
-	IngestSensor(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[SensorEventRequest, IngestResponse], error)
+	IngestSensor(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[IngestSensorRequest, IngestSensorResponse], error)
 }
 
 type sensorServiceClient struct {
@@ -37,24 +37,24 @@ func NewSensorServiceClient(cc grpc.ClientConnInterface) SensorServiceClient {
 	return &sensorServiceClient{cc}
 }
 
-func (c *sensorServiceClient) IngestSensor(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[SensorEventRequest, IngestResponse], error) {
+func (c *sensorServiceClient) IngestSensor(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[IngestSensorRequest, IngestSensorResponse], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	stream, err := c.cc.NewStream(ctx, &SensorService_ServiceDesc.Streams[0], SensorService_IngestSensor_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[SensorEventRequest, IngestResponse]{ClientStream: stream}
+	x := &grpc.GenericClientStream[IngestSensorRequest, IngestSensorResponse]{ClientStream: stream}
 	return x, nil
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type SensorService_IngestSensorClient = grpc.ClientStreamingClient[SensorEventRequest, IngestResponse]
+type SensorService_IngestSensorClient = grpc.ClientStreamingClient[IngestSensorRequest, IngestSensorResponse]
 
 // SensorServiceServer is the server API for SensorService service.
 // All implementations must embed UnimplementedSensorServiceServer
 // for forward compatibility.
 type SensorServiceServer interface {
-	IngestSensor(grpc.ClientStreamingServer[SensorEventRequest, IngestResponse]) error
+	IngestSensor(grpc.ClientStreamingServer[IngestSensorRequest, IngestSensorResponse]) error
 	mustEmbedUnimplementedSensorServiceServer()
 }
 
@@ -65,7 +65,7 @@ type SensorServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedSensorServiceServer struct{}
 
-func (UnimplementedSensorServiceServer) IngestSensor(grpc.ClientStreamingServer[SensorEventRequest, IngestResponse]) error {
+func (UnimplementedSensorServiceServer) IngestSensor(grpc.ClientStreamingServer[IngestSensorRequest, IngestSensorResponse]) error {
 	return status.Error(codes.Unimplemented, "method IngestSensor not implemented")
 }
 func (UnimplementedSensorServiceServer) mustEmbedUnimplementedSensorServiceServer() {}
@@ -90,11 +90,11 @@ func RegisterSensorServiceServer(s grpc.ServiceRegistrar, srv SensorServiceServe
 }
 
 func _SensorService_IngestSensor_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(SensorServiceServer).IngestSensor(&grpc.GenericServerStream[SensorEventRequest, IngestResponse]{ServerStream: stream})
+	return srv.(SensorServiceServer).IngestSensor(&grpc.GenericServerStream[IngestSensorRequest, IngestSensorResponse]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type SensorService_IngestSensorServer = grpc.ClientStreamingServer[SensorEventRequest, IngestResponse]
+type SensorService_IngestSensorServer = grpc.ClientStreamingServer[IngestSensorRequest, IngestSensorResponse]
 
 // SensorService_ServiceDesc is the grpc.ServiceDesc for SensorService service.
 // It's only intended for direct use with grpc.RegisterService,
