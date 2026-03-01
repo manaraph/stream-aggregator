@@ -22,7 +22,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type SensorEventRequest struct {
+type IngestSensorRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Sensor        string                 `protobuf:"bytes,1,opt,name=sensor,proto3" json:"sensor,omitempty"`
 	Value         float64                `protobuf:"fixed64,2,opt,name=value,proto3" json:"value,omitempty"`
@@ -31,20 +31,20 @@ type SensorEventRequest struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *SensorEventRequest) Reset() {
-	*x = SensorEventRequest{}
+func (x *IngestSensorRequest) Reset() {
+	*x = IngestSensorRequest{}
 	mi := &file_stream_v1_sensor_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *SensorEventRequest) String() string {
+func (x *IngestSensorRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*SensorEventRequest) ProtoMessage() {}
+func (*IngestSensorRequest) ProtoMessage() {}
 
-func (x *SensorEventRequest) ProtoReflect() protoreflect.Message {
+func (x *IngestSensorRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_stream_v1_sensor_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -56,33 +56,33 @@ func (x *SensorEventRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use SensorEventRequest.ProtoReflect.Descriptor instead.
-func (*SensorEventRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use IngestSensorRequest.ProtoReflect.Descriptor instead.
+func (*IngestSensorRequest) Descriptor() ([]byte, []int) {
 	return file_stream_v1_sensor_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *SensorEventRequest) GetSensor() string {
+func (x *IngestSensorRequest) GetSensor() string {
 	if x != nil {
 		return x.Sensor
 	}
 	return ""
 }
 
-func (x *SensorEventRequest) GetValue() float64 {
+func (x *IngestSensorRequest) GetValue() float64 {
 	if x != nil {
 		return x.Value
 	}
 	return 0
 }
 
-func (x *SensorEventRequest) GetTimestamp() *timestamppb.Timestamp {
+func (x *IngestSensorRequest) GetTimestamp() *timestamppb.Timestamp {
 	if x != nil {
 		return x.Timestamp
 	}
 	return nil
 }
 
-type IngestResponse struct {
+type IngestSensorResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
@@ -90,20 +90,20 @@ type IngestResponse struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *IngestResponse) Reset() {
-	*x = IngestResponse{}
+func (x *IngestSensorResponse) Reset() {
+	*x = IngestSensorResponse{}
 	mi := &file_stream_v1_sensor_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *IngestResponse) String() string {
+func (x *IngestSensorResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*IngestResponse) ProtoMessage() {}
+func (*IngestSensorResponse) ProtoMessage() {}
 
-func (x *IngestResponse) ProtoReflect() protoreflect.Message {
+func (x *IngestSensorResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_stream_v1_sensor_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -115,19 +115,19 @@ func (x *IngestResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use IngestResponse.ProtoReflect.Descriptor instead.
-func (*IngestResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use IngestSensorResponse.ProtoReflect.Descriptor instead.
+func (*IngestSensorResponse) Descriptor() ([]byte, []int) {
 	return file_stream_v1_sensor_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *IngestResponse) GetSuccess() bool {
+func (x *IngestSensorResponse) GetSuccess() bool {
 	if x != nil {
 		return x.Success
 	}
 	return false
 }
 
-func (x *IngestResponse) GetMessage() string {
+func (x *IngestSensorResponse) GetMessage() string {
 	if x != nil {
 		return x.Message
 	}
@@ -138,16 +138,16 @@ var File_stream_v1_sensor_proto protoreflect.FileDescriptor
 
 const file_stream_v1_sensor_proto_rawDesc = "" +
 	"\n" +
-	"\x16stream/v1/sensor.proto\x12\tstream.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"|\n" +
-	"\x12SensorEventRequest\x12\x16\n" +
+	"\x16stream/v1/sensor.proto\x12\tstream.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"}\n" +
+	"\x13IngestSensorRequest\x12\x16\n" +
 	"\x06sensor\x18\x01 \x01(\tR\x06sensor\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\x01R\x05value\x128\n" +
-	"\ttimestamp\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\ttimestamp\"D\n" +
-	"\x0eIngestResponse\x12\x18\n" +
+	"\ttimestamp\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\ttimestamp\"J\n" +
+	"\x14IngestSensorResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage2[\n" +
-	"\rSensorService\x12J\n" +
-	"\fIngestSensor\x12\x1d.stream.v1.SensorEventRequest\x1a\x19.stream.v1.IngestResponse(\x01BAZ?github.com/manaraph/stream-aggregator/pkg/pb/stream/v1;streamv1b\x06proto3"
+	"\amessage\x18\x02 \x01(\tR\amessage2b\n" +
+	"\rSensorService\x12Q\n" +
+	"\fIngestSensor\x12\x1e.stream.v1.IngestSensorRequest\x1a\x1f.stream.v1.IngestSensorResponse(\x01BAZ?github.com/manaraph/stream-aggregator/pkg/pb/stream/v1;streamv1b\x06proto3"
 
 var (
 	file_stream_v1_sensor_proto_rawDescOnce sync.Once
@@ -163,14 +163,14 @@ func file_stream_v1_sensor_proto_rawDescGZIP() []byte {
 
 var file_stream_v1_sensor_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_stream_v1_sensor_proto_goTypes = []any{
-	(*SensorEventRequest)(nil),    // 0: stream.v1.SensorEventRequest
-	(*IngestResponse)(nil),        // 1: stream.v1.IngestResponse
+	(*IngestSensorRequest)(nil),   // 0: stream.v1.IngestSensorRequest
+	(*IngestSensorResponse)(nil),  // 1: stream.v1.IngestSensorResponse
 	(*timestamppb.Timestamp)(nil), // 2: google.protobuf.Timestamp
 }
 var file_stream_v1_sensor_proto_depIdxs = []int32{
-	2, // 0: stream.v1.SensorEventRequest.timestamp:type_name -> google.protobuf.Timestamp
-	0, // 1: stream.v1.SensorService.IngestSensor:input_type -> stream.v1.SensorEventRequest
-	1, // 2: stream.v1.SensorService.IngestSensor:output_type -> stream.v1.IngestResponse
+	2, // 0: stream.v1.IngestSensorRequest.timestamp:type_name -> google.protobuf.Timestamp
+	0, // 1: stream.v1.SensorService.IngestSensor:input_type -> stream.v1.IngestSensorRequest
+	1, // 2: stream.v1.SensorService.IngestSensor:output_type -> stream.v1.IngestSensorResponse
 	2, // [2:3] is the sub-list for method output_type
 	1, // [1:2] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name

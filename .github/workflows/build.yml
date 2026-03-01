@@ -1,4 +1,4 @@
-name: Go Build
+name: Go CI/CD
 
 on:
   push:
@@ -7,25 +7,70 @@ on:
     branches: ['main']
 
 jobs:
-  build:
+  pipeline:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.25.x'
+          go-version: '1.23.x'
           cache: true
 
-      - name: Verify Go environment
-        run: |
-          go version
-          go env GOMOD
+      - name: Setup Buf
+        uses: bufbuild/buf-setup-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Buf Lint and Breaking
+        uses: bufbuild/buf-action@v1
+        with:
+          lint: true
+          breaking: true
+          breaking_against: 'https://github.com/${{ github.repository }}.git#branch=main'
+        env:
+          BUF_INPUT_HTTPS_USERNAME: x-access-token
+          BUF_INPUT_HTTPS_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download dependencies
         run: go mod download
 
-      - name: Build
+      - name: Run Tests with Race Detector
+        run: go list ./... | grep -v "proto" | xargs -r go test -v -race
+
+      - name: Check Go Coverage
+        uses: gwatts/go-coverage-action@v2
+        with:
+          coverage-threshold: 85
+          cover-pkg: ./...
+          ignore-pattern: |
+            .*/cmd/.*
+            .*/proto/.*
+            .*/pb/.*
+            .*mock_.*\.go
+
+      - name: Run Benchmarks
+        run: |
+          go test -bench=. -benchmem -run=^$ ./... | tee benchmark_output.txt
+
+      - name: Check Benchmark Regression
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'go'
+          output-file-path: benchmark_output.txt
+          fail-on-alert: true
+          alert-threshold: '200%'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          comment-on-alert: true
+          auto-push: true
+
+      - name: Build Binary
         run: go build -v ./...
