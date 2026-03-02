@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1772483389855,
+  "lastUpdate": 1772483568015,
   "repoUrl": "https://github.com/manaraph/stream-aggregator",
   "entries": {
     "Benchmark": [
@@ -92,6 +92,54 @@ window.BENCHMARK_DATA = {
             "value": 6,
             "unit": "allocs/op",
             "extra": "1723352 times\n2 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "manaraph225@gmail.com",
+            "name": "Manasseh Omachonu",
+            "username": "manaraph"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0d3c021a6bd83a45d05ccfee133dd150b507fde6",
+          "message": "Merge pull request #7 from manaraph/rf-structure-implementation\n\nAdd architecture diagram and documentation",
+          "timestamp": "2026-03-02T21:30:43+01:00",
+          "tree_id": "30fa4fac4d497d4f3db9f662b1ef9129492f1455",
+          "url": "https://github.com/manaraph/stream-aggregator/commit/0d3c021a6bd83a45d05ccfee133dd150b507fde6"
+        },
+        "date": 1772483567168,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkHubBroadcast",
+            "value": 608.2,
+            "unit": "ns/op\t     344 B/op\t       6 allocs/op",
+            "extra": "1980561 times\n2 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - ns/op",
+            "value": 608.2,
+            "unit": "ns/op",
+            "extra": "1980561 times\n2 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - B/op",
+            "value": 344,
+            "unit": "B/op",
+            "extra": "1980561 times\n2 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - allocs/op",
+            "value": 6,
+            "unit": "allocs/op",
+            "extra": "1980561 times\n2 procs"
           }
         ]
       }
