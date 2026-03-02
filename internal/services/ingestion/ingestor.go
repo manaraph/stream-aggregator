@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/manaraph/stream-aggregator/pkg/broker"
 	"github.com/manaraph/stream-aggregator/pkg/grpcapi"
 )
@@ -20,10 +21,18 @@ func Start() {
 		log.Fatalf("GATEWAY_ADDR not defined")
 	}
 
-	mclient, err := broker.NewMQTTClient(clientId)
-	if err != nil {
-		log.Fatalf("Failed to connect to MQTT broker: %v", err)
+	mbroker := os.Getenv("MQTT_BROKER")
+	if mbroker == "" {
+		log.Fatalf("MQTT_BROKER not defined")
 	}
+
+	opts := mqtt.NewClientOptions().AddBroker(mbroker).SetClientID(clientId)
+	mc := mqtt.NewClient(opts)
+	if token := mc.Connect(); token.Wait() && token.Error() != nil {
+		log.Fatal("connection failed: ", token.Error())
+	}
+
+	mclient := broker.NewMQTTClient(mc)
 	defer mclient.Close()
 
 	client, conn, err := grpcapi.NewClient(addr)
