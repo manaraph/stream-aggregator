@@ -44,7 +44,6 @@ func (m *mockIngestStream) Context() context.Context {
 
 // Tests
 func TestIngestSensor(t *testing.T) {
-	// 1. Setup fixed data
 	now := timestamppb.Now()
 	expectedValue := 25.060459624734243
 
@@ -67,22 +66,18 @@ func TestIngestSensor(t *testing.T) {
 		Hub: mockHub,
 	}
 
-	// Start server handler in background
 	go func() {
 		_ = server.IngestSensor(stream)
 	}()
 
-	// 2. Execute
 	stream.reqCh <- req
 	close(stream.reqCh) // triggers EOF
 
-	// 3. Assert with timeout to prevent test hanging
 	select {
 	case raw := <-mockHub.Events:
 		got, ok := raw.(*streamv1.IngestSensorRequest)
 		assert.True(t, ok, "received unexpected type from hub")
 
-		// 4. Use protocmp for robust message comparison
 		if diff := cmp.Diff(req, got, protocmp.Transform()); diff != "" {
 			t.Errorf("IngestSensorRequest mismatch (-want +got):\n%s", diff)
 		}
