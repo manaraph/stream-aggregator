@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1772483761840,
+  "lastUpdate": 1772483945112,
   "repoUrl": "https://github.com/manaraph/stream-aggregator",
   "entries": {
     "Benchmark": [
@@ -188,6 +188,54 @@ window.BENCHMARK_DATA = {
             "value": 6,
             "unit": "allocs/op",
             "extra": "1801808 times\n2 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "manaraph225@gmail.com",
+            "name": "manaraph",
+            "username": "manaraph"
+          },
+          "committer": {
+            "email": "manaraph225@gmail.com",
+            "name": "manaraph",
+            "username": "manaraph"
+          },
+          "distinct": true,
+          "id": "dedf03512611178524bdecd397d702fbb589cbe7",
+          "message": "Merge branch 'main' of github.com:manaraph/stream-aggregator",
+          "timestamp": "2026-03-02T21:37:57+01:00",
+          "tree_id": "93fd8c68906604b6a846865591e967faaf700674",
+          "url": "https://github.com/manaraph/stream-aggregator/commit/dedf03512611178524bdecd397d702fbb589cbe7"
+        },
+        "date": 1772483944102,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkHubBroadcast",
+            "value": 683.6,
+            "unit": "ns/op\t     344 B/op\t       6 allocs/op",
+            "extra": "1788153 times\n2 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - ns/op",
+            "value": 683.6,
+            "unit": "ns/op",
+            "extra": "1788153 times\n2 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - B/op",
+            "value": 344,
+            "unit": "B/op",
+            "extra": "1788153 times\n2 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - allocs/op",
+            "value": 6,
+            "unit": "allocs/op",
+            "extra": "1788153 times\n2 procs"
           }
         ]
       }
