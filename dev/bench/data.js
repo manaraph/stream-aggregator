@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1772398671961,
+  "lastUpdate": 1772483389855,
   "repoUrl": "https://github.com/manaraph/stream-aggregator",
   "entries": {
     "Benchmark": [
@@ -48,6 +48,50 @@ window.BENCHMARK_DATA = {
             "value": 6,
             "unit": "allocs/op",
             "extra": "1749939 times\n2 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "manaraph",
+            "username": "manaraph"
+          },
+          "committer": {
+            "name": "manaraph",
+            "username": "manaraph"
+          },
+          "id": "afdd8c50fb08eb7614a1ac18734cf71d0ce449e6",
+          "message": "Add architecture diagram and documentation",
+          "timestamp": "2026-03-01T20:56:10Z",
+          "url": "https://github.com/manaraph/stream-aggregator/pull/7/commits/afdd8c50fb08eb7614a1ac18734cf71d0ce449e6"
+        },
+        "date": 1772483388842,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkHubBroadcast",
+            "value": 742.9,
+            "unit": "ns/op\t     344 B/op\t       6 allocs/op",
+            "extra": "1723352 times\n2 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - ns/op",
+            "value": 742.9,
+            "unit": "ns/op",
+            "extra": "1723352 times\n2 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - B/op",
+            "value": 344,
+            "unit": "B/op",
+            "extra": "1723352 times\n2 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - allocs/op",
+            "value": 6,
+            "unit": "allocs/op",
+            "extra": "1723352 times\n2 procs"
           }
         ]
       }
