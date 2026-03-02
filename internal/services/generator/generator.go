@@ -4,14 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"math/rand"
 	"os"
 	"strconv"
 	"time"
 
-	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/manaraph/stream-aggregator/internal/domain"
 	"github.com/manaraph/stream-aggregator/pkg/broker"
 )
@@ -66,23 +64,16 @@ func init() {
 	log.Printf("Publishing at %d events/sec (interval %v)", rate, interval)
 }
 
-func NewPublisherFromEnv() (*Publisher, error) {
+func NewPublisher() (*Publisher, error) {
 	clientId := os.Getenv("GENERATOR_ID")
 	if clientId == "" {
 		return nil, errors.New("GENERATOR_ID not defined")
 	}
 
-	mbroker := os.Getenv("MQTT_BROKER")
-	if mbroker == "" {
-		return nil, errors.New("MQTT_BROKER not defined")
+	mclient, err := broker.NewMQTTClient(clientId)
+	if err != nil {
+		return nil, err
 	}
 
-	opts := mqtt.NewClientOptions().AddBroker(mbroker).SetClientID(clientId)
-	mc := mqtt.NewClient(opts)
-
-	if token := mc.Connect(); token.Wait() && token.Error() != nil {
-		return nil, fmt.Errorf("connection failed: %w", token.Error())
-	}
-
-	return &Publisher{B: broker.NewMQTTClient(mc)}, nil
+	return &Publisher{B: mclient}, nil
 }

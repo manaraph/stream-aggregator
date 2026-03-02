@@ -14,7 +14,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	p, err := generator.NewPublisherFromEnv()
+	p, err := generator.NewPublisher()
 	if err != nil {
 		log.Println("connection failed: ", err)
 		return

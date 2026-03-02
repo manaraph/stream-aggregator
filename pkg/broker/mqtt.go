@@ -2,6 +2,7 @@ package broker
 
 import (
 	"errors"
+	"os"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
@@ -10,8 +11,19 @@ type MQTTClient struct {
 	mc mqtt.Client
 }
 
-func NewMQTTClient(mc mqtt.Client) *MQTTClient {
-	return &MQTTClient{mc}
+func NewMQTTClient(clientId string) (*MQTTClient, error) {
+	mbroker := os.Getenv("MQTT_BROKER")
+	if mbroker == "" {
+		return nil, errors.New("MQTT_BROKER not defined")
+	}
+
+	opts := mqtt.NewClientOptions().AddBroker(mbroker).SetClientID(clientId)
+	mc := mqtt.NewClient(opts)
+	if token := mc.Connect(); token.Wait() && token.Error() != nil {
+		return nil, token.Error()
+	}
+
+	return &MQTTClient{mc}, nil
 }
 
 func (c *MQTTClient) Publish(topic string, data []byte) error {

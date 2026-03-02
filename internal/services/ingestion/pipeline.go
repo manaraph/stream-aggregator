@@ -61,7 +61,6 @@ func (p *Processor) EnqueueEvent(e domain.Sensor) {
 func (p *Processor) queueStatus() {
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
-
 	for range ticker.C {
 		used := len(p.eventQueue)
 		capacity := cap(p.eventQueue)

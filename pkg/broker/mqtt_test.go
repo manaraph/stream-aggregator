@@ -2,6 +2,7 @@ package broker
 
 import (
 	"errors"
+	"os"
 	"testing"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -38,12 +39,21 @@ func (m *MockClient) Subscribe(topic string, qos byte, callback mqtt.MessageHand
 }
 
 func TestNewMQTTClient(t *testing.T) {
-	mockClient := new(MockClient)
+	t.Run("Fails_When_No_Broker", func(t *testing.T) {
+		os.Setenv("MQTT_BROKER", "tcp://localhost:12345") // Non-existent port
+		client, err := NewMQTTClient("clientId")
 
-	client := NewMQTTClient(mockClient)
+		assert.Error(t, err)
+		assert.Nil(t, client)
+	})
 
-	assert.NotNil(t, client, "Constructor should return a valid pointer")
-	assert.Equal(t, mockClient, client.mc, "The internal client should match the passed mock")
+	t.Run("Fails_When_No_Env", func(t *testing.T) {
+		os.Unsetenv("MQTT_BROKER")
+		client, err := NewMQTTClient("clientId")
+
+		assert.Nil(t, client)
+		assert.Contains(t, err.Error(), "not defined")
+	})
 }
 
 func TestPublish(t *testing.T) {
@@ -81,24 +91,23 @@ func TestPublish_Error(t *testing.T) {
 }
 
 func TestSubscribe(t *testing.T) {
-	t.Run("Successful Subscription", func(t *testing.T) {
+	t.Run("Successful_Subscription", func(t *testing.T) {
 		mockClient := new(MockClient)
 		mockToken := new(MockToken)
 
-		// Define a dummy handler
-		handler := func(c mqtt.Client, m mqtt.Message) {}
-
-		// Expectations
+		topic := "sensors/data"
 		mockToken.On("Error").Return(nil)
-		mockClient.On("Subscribe", "sensors/+/data", byte(0), mock.Anything).Return(mockToken)
+		mockClient.On("Subscribe", topic, byte(0), mock.Anything).Return(mockToken)
 
-		// Initialize with your new constructor
-		c := NewMQTTClient(mockClient)
+		c := &MQTTClient{mc: mockClient}
 
-		err := c.Subscribe("sensors/+/data", handler)
+		handler := func(client mqtt.Client, msg mqtt.Message) {}
+
+		err := c.Subscribe(topic, handler)
 
 		assert.NoError(t, err)
 		mockClient.AssertExpectations(t)
+
 	})
 
 	t.Run("Subscription Failure", func(t *testing.T) {
@@ -107,7 +116,8 @@ func TestSubscribe(t *testing.T) {
 
 		mockClient.On("Subscribe", mock.Anything, mock.Anything, mock.Anything).Return(mockToken)
 
-		c := NewMQTTClient(mockClient)
+		os.Setenv("MQTT_BROKER", "tcp://localhost:9999")
+		c, _ := NewMQTTClient("clientId")
 		err := c.Subscribe("invalid/topic", nil)
 
 		assert.Error(t, err)

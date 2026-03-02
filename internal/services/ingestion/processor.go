@@ -11,6 +11,7 @@ import (
 	"github.com/manaraph/stream-aggregator/internal/domain"
 	"github.com/manaraph/stream-aggregator/pkg/broker"
 	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
+	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -20,6 +21,7 @@ type StreamClient interface {
 
 type Processor struct {
 	B          broker.Broker
+	GRPC       *grpc.ClientConn
 	S          StreamClient
 	eventQueue chan domain.Sensor
 	processed  uint64
@@ -64,8 +66,13 @@ func (p *Processor) ForwardEvent(data domain.Sensor) {
 
 func (p *Processor) Close(ctx context.Context) error {
 	log.Println("Shutting down processor...")
+
 	if p.cancel != nil {
 		p.cancel()
+	}
+
+	if p.B != nil {
+		p.B.Close()
 	}
 
 	close(p.eventQueue)
@@ -78,9 +85,15 @@ func (p *Processor) Close(ctx context.Context) error {
 
 	select {
 	case <-done:
-		log.Println("Processor exited cleanly")
-		return nil
+		log.Println("Workers drained successfully")
 	case <-ctx.Done():
 		return fmt.Errorf("shutdown timed out: %w", ctx.Err())
 	}
+
+	if p.GRPC != nil {
+		log.Println("Closing gRPC connection")
+		return p.GRPC.Close()
+	}
+
+	return nil
 }

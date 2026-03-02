@@ -79,7 +79,7 @@ func TestNewPublisherFromEnv(t *testing.T) {
 		os.Unsetenv("GENERATOR_ID")
 		os.Unsetenv("MQTT_BROKER")
 
-		pub, err := NewPublisherFromEnv()
+		pub, err := NewPublisher()
 		assert.Nil(t, pub)
 		assert.Error(t, err)
 	})
@@ -89,7 +89,7 @@ func TestNewPublisherFromEnv(t *testing.T) {
 		os.Setenv("MQTT_BROKER", "tcp://invalid-address:9999")
 		defer os.Clearenv()
 
-		pub, err := NewPublisherFromEnv()
+		pub, err := NewPublisher()
 		assert.Nil(t, pub)
 		assert.Error(t, err)
 	})
