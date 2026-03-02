@@ -6,6 +6,11 @@ type MockMessage struct {
 	mqtt.Message
 	PayloadData []byte
 }
+
+func (m *MockMessage) Payload() []byte {
+	return m.PayloadData
+}
+
 type FakeBroker struct {
 	Messages chan []byte
 }

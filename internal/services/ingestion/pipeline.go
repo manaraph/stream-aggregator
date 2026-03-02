@@ -41,16 +41,20 @@ func (p *Processor) worker(id int) {
 
 	for e := range p.eventQueue {
 		p.ForwardEvent(e)
+		p.WG.Done()
 	}
 }
 
 func (p *Processor) EnqueueEvent(e domain.Sensor) {
+	p.WG.Add(1)
+
 	select {
 	case p.eventQueue <- e:
 		atomic.AddUint64(&p.processed, 1)
 	default:
 		log.Println("WARNING: ingestion queue full, dropping event")
 		atomic.AddUint64(&p.dropped, 1)
+		p.WG.Done()
 	}
 }
 
