@@ -63,3 +63,15 @@ make down
 ```
 make test
 ```
+
+### Run tests and show coverage
+
+```
+make coverage
+```
+
+### Run tests and open coverage in the browser
+
+```
+make open-coverage
+```
