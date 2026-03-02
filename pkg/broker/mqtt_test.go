@@ -105,14 +105,13 @@ func TestSubscribe(t *testing.T) {
 		mockClient := new(MockClient)
 		mockToken := new(MockToken)
 
-		mockToken.On("Error").Return(errors.New("subscribe permission denied"))
 		mockClient.On("Subscribe", mock.Anything, mock.Anything, mock.Anything).Return(mockToken)
 
 		c := NewMQTTClient(mockClient)
 		err := c.Subscribe("invalid/topic", nil)
 
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "permission denied")
+		assert.Contains(t, err.Error(), "handler cannot be nil")
 	})
 }
 

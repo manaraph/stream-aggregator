@@ -1,6 +1,8 @@
 package broker
 
 import (
+	"errors"
+
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
@@ -18,6 +20,10 @@ func (c *MQTTClient) Publish(topic string, data []byte) error {
 }
 
 func (c *MQTTClient) Subscribe(topic string, handler func(c mqtt.Client, m mqtt.Message)) error {
+	if handler == nil {
+		return errors.New("mqtt: handler cannot be nil")
+	}
+
 	token := c.mc.Subscribe(topic, 0, handler)
 	return token.Error()
 }
