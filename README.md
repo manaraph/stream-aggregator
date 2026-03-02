@@ -1,6 +1,6 @@
 # stream-aggregator
 
-This project implements a real-time event aggregation system for streaming simulated sensor data using Go, NATS, gRPC, and WebSockets.
+This project implements a real-time event aggregation system for streaming simulated sensor data using Go, MQTT, gRPC, and WebSockets.
 
 ## Architecture
 
