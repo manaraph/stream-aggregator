@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1772483568015,
+  "lastUpdate": 1772483761840,
   "repoUrl": "https://github.com/manaraph/stream-aggregator",
   "entries": {
     "Benchmark": [
@@ -140,6 +140,54 @@ window.BENCHMARK_DATA = {
             "value": 6,
             "unit": "allocs/op",
             "extra": "1980561 times\n2 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "manaraph225@gmail.com",
+            "name": "Manasseh Omachonu",
+            "username": "manaraph"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b68c29e09630fa57f3af41dbf45a9c1b5dd0b3dc",
+          "message": "Update messaging protocol from NATS to MQTT",
+          "timestamp": "2026-03-02T21:35:00+01:00",
+          "tree_id": "9fe21e082c925c869c386eed6b239dd7a115a61d",
+          "url": "https://github.com/manaraph/stream-aggregator/commit/b68c29e09630fa57f3af41dbf45a9c1b5dd0b3dc"
+        },
+        "date": 1772483760964,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkHubBroadcast",
+            "value": 672.4,
+            "unit": "ns/op\t     344 B/op\t       6 allocs/op",
+            "extra": "1801808 times\n2 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - ns/op",
+            "value": 672.4,
+            "unit": "ns/op",
+            "extra": "1801808 times\n2 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - B/op",
+            "value": 344,
+            "unit": "B/op",
+            "extra": "1801808 times\n2 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - allocs/op",
+            "value": 6,
+            "unit": "allocs/op",
+            "extra": "1801808 times\n2 procs"
           }
         ]
       }
