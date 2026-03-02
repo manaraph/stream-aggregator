@@ -1,7 +1,24 @@
 package main
 
-import "github.com/manaraph/stream-aggregator/internal/services/generator"
+import (
+	"context"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
+
+	"github.com/manaraph/stream-aggregator/internal/services/generator"
+)
 
 func main() {
-	generator.Start()
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	p, err := generator.NewPublisher()
+	if err != nil {
+		log.Println("connection failed: ", err)
+		return
+	}
+
+	p.Run(ctx)
 }

@@ -1,0 +1,51 @@
+<svg width="900" height="520" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .box { fill:#f6f8fa; stroke:#1f2937; stroke-width:2; rx:10; ry:10; }
+    .title { font-family:Arial; font-size:16px; font-weight:bold; fill:#111827; }
+    .text { font-family:Arial; font-size:13px; fill:#111827; }
+    .arrow { stroke:#111827; stroke-width:2; marker-end:url(#arrowhead); }
+  </style>
+
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#111827"/>
+    </marker>
+  </defs>
+
+  <!-- Generator -->
+  <rect x="40" y="60" width="200" height="80" class="box"/>
+  <text x="60" y="90" class="title">Generator Service</text>
+  <text x="60" y="110" class="text">Publish sensor events</text>
+
+  <!-- Broker -->
+  <rect x="340" y="60" width="200" height="80" class="box"/>
+  <text x="360" y="90" class="title">Message Broker</text>
+  <text x="360" y="110" class="text">Mosquitto</text>
+
+  <!-- Ingestion -->
+  <rect x="340" y="200" width="200" height="80" class="box"/>
+  <text x="360" y="235" class="title">Ingestion Service</text>
+  <text x="360" y="255" class="text">Process / Enrich</text>
+
+  <!-- Gateway -->
+  <rect x="340" y="340" width="200" height="100" class="box"/>
+  <text x="360" y="375" class="title">Gateway Service</text>
+  <text x="360" y="395" class="text">gRPC Server</text>
+  <text x="360" y="410" class="text">WebSocket Hub</text>
+
+  <!-- Clients -->
+  <rect x="640" y="360" width="200" height="80" class="box"/>
+  <text x="665" y="395" class="title">Clients</text>
+  <text x="665" y="415" class="text">Web / Mobile UI</text>
+
+  <!-- Arrows -->
+  <line x1="240" y1="100" x2="340" y2="100" class="arrow"/>
+  <line x1="440" y1="140" x2="440" y2="200" class="arrow"/>
+  <line x1="440" y1="280" x2="440" y2="340" class="arrow"/>
+  <line x1="540" y1="390" x2="640" y2="390" class="arrow"/>
+
+  <!-- Labels -->
+  <text x="460" y="170" class="text">Events</text>
+  <text x="460" y="315" class="text">gRPC Stream</text>
+  <text x="560" y="370" class="text">WebSocket</text>
+</svg>

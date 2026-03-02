@@ -11,9 +11,9 @@ service SensorService {
 }
 
 message IngestSensorRequest {
-  string sensor = 1;                    
-  double value = 2;                     
-  google.protobuf.Timestamp timestamp = 3; 
+  string sensor = 1;
+  double value = 2;
+  google.protobuf.Timestamp timestamp = 3;
 }
 
 message IngestSensorResponse {

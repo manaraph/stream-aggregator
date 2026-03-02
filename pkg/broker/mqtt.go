@@ -12,12 +12,12 @@ type MQTTClient struct {
 }
 
 func NewMQTTClient(clientId string) (*MQTTClient, error) {
-	broker := os.Getenv("MQTT_BROKER")
-	if broker == "" {
+	mbroker := os.Getenv("MQTT_BROKER")
+	if mbroker == "" {
 		return nil, errors.New("MQTT_BROKER not defined")
 	}
 
-	opts := mqtt.NewClientOptions().AddBroker(broker).SetClientID(clientId)
+	opts := mqtt.NewClientOptions().AddBroker(mbroker).SetClientID(clientId)
 	mc := mqtt.NewClient(opts)
 	if token := mc.Connect(); token.Wait() && token.Error() != nil {
 		return nil, token.Error()
@@ -32,6 +32,10 @@ func (c *MQTTClient) Publish(topic string, data []byte) error {
 }
 
 func (c *MQTTClient) Subscribe(topic string, handler func(c mqtt.Client, m mqtt.Message)) error {
+	if handler == nil {
+		return errors.New("mqtt: handler cannot be nil")
+	}
+
 	token := c.mc.Subscribe(topic, 0, handler)
 	return token.Error()
 }

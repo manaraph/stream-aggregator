@@ -1,5 +1,16 @@
 package broker
 
+import mqtt "github.com/eclipse/paho.mqtt.golang"
+
+type MockMessage struct {
+	mqtt.Message
+	PayloadData []byte
+}
+
+func (m *MockMessage) Payload() []byte {
+	return m.PayloadData
+}
+
 type FakeBroker struct {
 	Messages chan []byte
 }
@@ -12,11 +23,10 @@ func (f *FakeBroker) Publish(topic string, data []byte) error {
 	f.Messages <- data
 	return nil
 }
-
-func (f *FakeBroker) Subscribe(topic string, handler func([]byte)) error {
+func (f *FakeBroker) Subscribe(topic string, handler func(mqtt.Client, mqtt.Message)) error {
 	go func() {
 		for msg := range f.Messages {
-			handler(msg)
+			handler(nil, &MockMessage{PayloadData: msg})
 		}
 	}()
 	return nil
