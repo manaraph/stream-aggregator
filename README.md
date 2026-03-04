@@ -75,3 +75,9 @@ make coverage
 ```
 make open-coverage
 ```
+
+## TODO
+- [x] Architecture and documentation.
+- [x] Unit testing and CI checks for coverage and buf lint/breaking changes.
+- [ ] Add option for switching message broker - MQTT, NATS or Kafka.
+- [ ] Expose websocket api for viewing metrics - event count, delivery rate, latency, etc.
