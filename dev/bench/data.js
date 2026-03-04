@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1772483945112,
+  "lastUpdate": 1772659458066,
   "repoUrl": "https://github.com/manaraph/stream-aggregator",
   "entries": {
     "Benchmark": [
@@ -236,6 +236,54 @@ window.BENCHMARK_DATA = {
             "value": 6,
             "unit": "allocs/op",
             "extra": "1788153 times\n2 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "manaraph225@gmail.com",
+            "name": "Manasseh Omachonu",
+            "username": "manaraph"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8aa9f66e186fe21be2e01ff45e7666e61fa3abf4",
+          "message": "Update README with new TODO items\n\nAdded TODO items for message broker options and websocket API.",
+          "timestamp": "2026-03-04T22:23:43+01:00",
+          "tree_id": "ef79f637490858ebe50713beb372332b4f178de3",
+          "url": "https://github.com/manaraph/stream-aggregator/commit/8aa9f66e186fe21be2e01ff45e7666e61fa3abf4"
+        },
+        "date": 1772659457456,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkHubBroadcast",
+            "value": 588.3,
+            "unit": "ns/op\t     344 B/op\t       6 allocs/op",
+            "extra": "2073014 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - ns/op",
+            "value": 588.3,
+            "unit": "ns/op",
+            "extra": "2073014 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - B/op",
+            "value": 344,
+            "unit": "B/op",
+            "extra": "2073014 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - allocs/op",
+            "value": 6,
+            "unit": "allocs/op",
+            "extra": "2073014 times\n4 procs"
           }
         ]
       }
