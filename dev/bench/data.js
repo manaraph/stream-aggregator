@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1772659458066,
+  "lastUpdate": 1772673751838,
   "repoUrl": "https://github.com/manaraph/stream-aggregator",
   "entries": {
     "Benchmark": [
@@ -284,6 +284,54 @@ window.BENCHMARK_DATA = {
             "value": 6,
             "unit": "allocs/op",
             "extra": "2073014 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "manaraph225@gmail.com",
+            "name": "Manasseh Omachonu",
+            "username": "manaraph"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9b1130bc4f74749ccc9d063c9b7c018982801123",
+          "message": "Remove message broker switch option from TODO\n\nRemoved the task to add an option for switching message brokers from the TODO list.",
+          "timestamp": "2026-03-05T02:22:01+01:00",
+          "tree_id": "fa523a880a82c5cd9bb1a1e9c53885cd7b38ff14",
+          "url": "https://github.com/manaraph/stream-aggregator/commit/9b1130bc4f74749ccc9d063c9b7c018982801123"
+        },
+        "date": 1772673751523,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkHubBroadcast",
+            "value": 598.9,
+            "unit": "ns/op\t     344 B/op\t       6 allocs/op",
+            "extra": "1917132 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - ns/op",
+            "value": 598.9,
+            "unit": "ns/op",
+            "extra": "1917132 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - B/op",
+            "value": 344,
+            "unit": "B/op",
+            "extra": "1917132 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - allocs/op",
+            "value": 6,
+            "unit": "allocs/op",
+            "extra": "1917132 times\n4 procs"
           }
         ]
       }
