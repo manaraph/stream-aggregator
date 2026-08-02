@@ -1,18 +1,14 @@
 package ws
 
-import (
-	"encoding/json"
-)
-
 type Hub struct {
 	clients    map[*Client]struct{}
 	register   chan *Client
 	unregister chan *Client
-	broadcast  chan []byte
+	events     chan []byte
 }
 
 type Broadcaster interface {
-	BroadcastEvent(any)
+	Broadcast([]byte)
 }
 
 func NewHub() *Hub {
@@ -20,14 +16,13 @@ func NewHub() *Hub {
 		clients:    make(map[*Client]struct{}),
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
-		broadcast:  make(chan []byte, 1024),
+		events:     make(chan []byte, 1024),
 	}
 }
 
-func (h *Hub) BroadcastEvent(e any) {
-	data, _ := json.Marshal(e)
+func (h *Hub) Broadcast(msg []byte) {
 	select {
-	case h.broadcast <- data:
+	case h.events <- msg:
 	default:
 	}
 }
@@ -44,7 +39,7 @@ func (h *Hub) Run() {
 				close(c.send)
 			}
 
-		case msg := <-h.broadcast:
+		case msg := <-h.events:
 			for c := range h.clients {
 				select {
 				case c.send <- msg:

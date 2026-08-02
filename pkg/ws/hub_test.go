@@ -18,7 +18,7 @@ func TestHubRegisterBroadcastUnregister(t *testing.T) {
 	h.register <- c
 	time.Sleep(10 * time.Millisecond)
 
-	h.BroadcastEvent(map[string]string{"msg": "hello"})
+	h.Broadcast([]byte(`{"msg": "hello"}`))
 
 	select {
 	case msg := <-c.send:

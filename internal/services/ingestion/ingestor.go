@@ -32,10 +32,18 @@ func NewProcessor() (*Processor, error) {
 
 	}
 
-	stream, err := client.IngestSensor(context.Background())
+	ctx := context.Background()
+	stream, err := client.IngestSensor(ctx)
 	if err != nil {
+		conn.Close()
 		return nil, fmt.Errorf("Failed to open gRPC stream: %w", err)
 	}
 
-	return &Processor{B: mclient, GRPC: conn, S: stream}, nil
+	metricsStream, err := client.StreamMetrics(ctx)
+	if err != nil {
+		conn.Close()
+		return nil, fmt.Errorf("Failed to open metrics stream: %w", err)
+	}
+
+	return &Processor{B: mclient, GRPC: conn, S: stream, M: metricsStream}, nil
 }

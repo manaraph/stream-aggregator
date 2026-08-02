@@ -25,13 +25,13 @@ func NewGateway(grpcAddr, httpAddr string) (*Gateway, error) {
 	}
 
 	grpcServer := grpc.NewServer()
-	streamv1.RegisterSensorServiceServer(grpcServer, &grpcapi.Server{Hub: hub})
+	streamv1.RegisterSensorServiceServer(grpcServer, &grpcapi.Server{Dispatcher: NewDispatcher(hub)})
 
 	go hub.Run()
 	go grpcServer.Serve(lis)
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/ws", hub.Handler)
+	hub.RegisterRoute(mux)
 	mux.HandleFunc("/health", func(w http.ResponseWriter, _ *http.Request) {
 		w.Write([]byte("ok"))
 	})

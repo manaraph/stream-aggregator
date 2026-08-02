@@ -23,7 +23,7 @@ go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 ```
 
-Note: You can regenerate the protobuf code using `buf generate`
+Note: You can regenerate the protobuf code using `buf generate`. You can also lint the proto definitions with `buf lint`.
 
 ## Running the App
 

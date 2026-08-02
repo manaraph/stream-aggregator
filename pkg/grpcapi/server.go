@@ -4,13 +4,13 @@ import (
 	"io"
 	"log"
 
+	"github.com/manaraph/stream-aggregator/pkg/events"
 	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
-	"github.com/manaraph/stream-aggregator/pkg/ws"
 )
 
 type Server struct {
 	streamv1.UnimplementedSensorServiceServer
-	Hub ws.Broadcaster
+	Dispatcher Dispatcher
 }
 
 func (s *Server) IngestSensor(stream streamv1.SensorService_IngestSensorServer) error {
@@ -23,8 +23,25 @@ func (s *Server) IngestSensor(stream streamv1.SensorService_IngestSensorServer) 
 		if err != nil {
 			return err
 		}
-		log.Printf("gRPC event: %+v", e)
 
-		s.Hub.BroadcastEvent(e)
+		msg := events.NewSensorMessage(e)
+		s.Dispatcher.Publish(msg)
+	}
+}
+
+func (s *Server) StreamMetrics(stream streamv1.SensorService_StreamMetricsServer) error {
+	for {
+		e, err := stream.Recv()
+		if err == io.EOF {
+			return nil
+		}
+
+		if err != nil {
+			log.Println("Metrics stream closed:", err)
+			return err
+		}
+
+		msg := events.NewMetricsMessage(e)
+		s.Dispatcher.Publish(msg)
 	}
 }

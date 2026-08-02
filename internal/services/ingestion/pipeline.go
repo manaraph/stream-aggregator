@@ -1,6 +1,7 @@
 package ingestion
 
 import (
+	"context"
 	"log"
 	"os"
 	"strconv"
@@ -8,6 +9,7 @@ import (
 	"time"
 
 	"github.com/manaraph/stream-aggregator/internal/domain"
+	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 )
 
 func (p *Processor) initPipeline() {
@@ -26,6 +28,9 @@ func (p *Processor) initPipeline() {
 	}
 
 	p.eventQueue = make(chan domain.Sensor, queueSize)
+	if p.ctx == nil {
+		p.ctx = context.Background()
+	}
 
 	log.Printf("Starting ingestion pipeline: workers=%d queue=%d", workerCount, queueSize)
 
@@ -45,7 +50,7 @@ func (p *Processor) worker(id int) {
 	}
 }
 
-func (p *Processor) EnqueueEvent(e domain.Sensor) {
+func (p *Processor) enqueueEvent(e domain.Sensor) {
 	p.WG.Add(1)
 
 	select {
@@ -61,17 +66,37 @@ func (p *Processor) EnqueueEvent(e domain.Sensor) {
 func (p *Processor) queueStatus() {
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
-	for range ticker.C {
-		used := len(p.eventQueue)
-		capacity := cap(p.eventQueue)
-		percent := float64(used) / float64(capacity) * 100
-
-		log.Printf("QUEUE %d/%d (%.1f%%) processed=%d dropped=%d",
-			used,
-			capacity,
-			percent,
-			atomic.LoadUint64(&p.processed),
-			atomic.LoadUint64(&p.dropped),
-		)
+	var previousProcessed uint64
+	for {
+		select {
+		case <-p.ctx.Done():
+			return
+		case <-ticker.C:
+			previousProcessed = p.reportQueueStatus(previousProcessed, 5*time.Second)
+		}
 	}
+}
+
+func (p *Processor) reportQueueStatus(previousProcessed uint64, interval time.Duration) uint64 {
+	used := len(p.eventQueue)
+	capacity := cap(p.eventQueue)
+	percent := 0.0
+	if capacity > 0 {
+		percent = float64(used) / float64(capacity) * 100
+	}
+
+	processed := atomic.LoadUint64(&p.processed)
+	dropped := atomic.LoadUint64(&p.dropped)
+	rate := float64(processed-previousProcessed) / interval.Seconds()
+
+	p.ForwardMetrics(&streamv1.StreamMetricsRequest{
+		Processed:     processed,
+		Dropped:       dropped,
+		QueueUsed:     uint32(used),
+		QueueCapacity: uint32(capacity),
+		QueuePercent:  percent,
+		Rate:          rate,
+	})
+
+	return processed
 }

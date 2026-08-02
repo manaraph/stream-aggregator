@@ -26,7 +26,7 @@ func TestProcessor_Flow(t *testing.T) {
 	p.initPipeline()
 
 	event := domain.Sensor{Sensor: "test-sensor", Value: 10.5}
-	p.EnqueueEvent(event)
+	p.enqueueEvent(event)
 
 	p.WG.Wait()
 
@@ -41,10 +41,10 @@ func TestProcessor_QueueFull(t *testing.T) {
 
 	e := domain.Sensor{Sensor: "s1"}
 
-	p.EnqueueEvent(e)
+	p.enqueueEvent(e)
 	assert.Equal(t, uint64(1), atomic.LoadUint64(&p.processed))
 
-	p.EnqueueEvent(e)
+	p.enqueueEvent(e)
 	assert.Equal(t, uint64(1), atomic.LoadUint64(&p.dropped))
 }
 

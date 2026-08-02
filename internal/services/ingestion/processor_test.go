@@ -20,6 +20,15 @@ type MockStream struct {
 	mock.Mock
 }
 
+type MockMetricsStream struct {
+	mock.Mock
+}
+
+func (m *MockMetricsStream) Send(req *streamv1.StreamMetricsRequest) error {
+	args := m.Called(req)
+	return args.Error(0)
+}
+
 func (m *MockStream) Send(req *streamv1.IngestSensorRequest) error {
 	args := m.Called(req)
 	return args.Error(0)
@@ -103,4 +112,29 @@ func TestForwardEvent_Errors(t *testing.T) {
 
 		mockS.AssertExpectations(t)
 	})
+}
+
+func TestReportQueueStatusForwardsMetrics(t *testing.T) {
+	metricsStream := new(MockMetricsStream)
+	p := &Processor{
+		eventQueue: make(chan domain.Sensor, 4),
+		M:          metricsStream,
+		processed:  9,
+		dropped:    2,
+	}
+	p.eventQueue <- domain.Sensor{}
+	p.eventQueue <- domain.Sensor{}
+
+	metricsStream.On("Send", &streamv1.StreamMetricsRequest{
+		Processed:     9,
+		Dropped:       2,
+		QueueUsed:     2,
+		QueueCapacity: 4,
+		QueuePercent:  50,
+		Rate:          1,
+	}).Return(nil).Once()
+
+	processed := p.reportQueueStatus(4, 5*time.Second)
+	assert.Equal(t, uint64(9), processed)
+	metricsStream.AssertExpectations(t)
 }

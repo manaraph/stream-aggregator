@@ -44,11 +44,40 @@ func (c *Client) readPump() {
 }
 
 func (c *Client) writePump() {
-	defer c.conn.Close()
 
-	for msg := range c.send {
-		if err := c.conn.WriteMessage(websocket.TextMessage, msg); err != nil {
-			return
+	ticker := time.NewTicker(50 * time.Second)
+
+	defer func() {
+		ticker.Stop()
+		c.conn.Close()
+	}()
+
+	for {
+
+		select {
+
+		case msg, ok := <-c.send:
+
+			c.conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
+
+			if !ok {
+				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
+				return
+			}
+
+			if err := c.conn.WriteMessage(websocket.TextMessage, msg); err != nil {
+				return
+			}
+
+		case <-ticker.C:
+
+			c.conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
+
+			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+				return
+			}
+
 		}
+
 	}
 }
