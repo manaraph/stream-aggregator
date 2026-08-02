@@ -3,6 +3,8 @@ package ws
 import (
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestHubRegisterBroadcastUnregister(t *testing.T) {
@@ -52,4 +54,31 @@ func TestHubStatsReportsRuntimeState(t *testing.T) {
 	if stats.BackpressureLevel == 0 {
 		t.Fatal("expected backpressure level to reflect queued events")
 	}
+}
+
+func TestHubDropsMessagesWhenQueueIsFull(t *testing.T) {
+	h := NewHub()
+	for i := 0; i < 1025; i++ {
+		h.Broadcast([]byte("x"))
+	}
+
+	assert.Equal(t, uint64(1), h.dropped)
+}
+
+func TestHubRemovesSlowClientOnBroadcastFailure(t *testing.T) {
+	h := NewHub()
+	go h.Run()
+
+	client := &Client{hub: h, send: make(chan []byte, 1)}
+	client.send <- []byte("one")
+	h.register <- client
+
+	assert.Eventually(t, func() bool {
+		return h.Stats().Clients == 1
+	}, time.Second, 10*time.Millisecond)
+
+	h.events <- []byte("msg")
+	assert.Eventually(t, func() bool {
+		return h.Stats().Clients == 0
+	}, time.Second, 10*time.Millisecond)
 }

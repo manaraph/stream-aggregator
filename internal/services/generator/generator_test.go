@@ -3,11 +3,13 @@ package generator
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net"
 	"os"
 	"testing"
 	"time"
 
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/manaraph/stream-aggregator/internal/domain"
 	"github.com/manaraph/stream-aggregator/pkg/broker"
 	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
@@ -19,6 +21,16 @@ import (
 type stubMetricsClient struct {
 	requests []*streamv1.IngestMetricsRequest
 }
+
+type failingBroker struct {
+	publishErr error
+}
+
+func (f *failingBroker) Publish(string, []byte) error { return f.publishErr }
+func (f *failingBroker) Subscribe(string, func(mqtt.Client, mqtt.Message)) error {
+	return nil
+}
+func (f *failingBroker) Close() error { return nil }
 
 func (s *stubMetricsClient) Send(req *streamv1.IngestMetricsRequest) error {
 	s.requests = append(s.requests, req)
@@ -104,6 +116,14 @@ func TestPublisher_ReportMetrics(t *testing.T) {
 		assert.True(t, request.GetBroker().GetConnected())
 		assert.Equal(t, uint32(2), request.GetBroker().GetErrors())
 	}
+}
+
+func TestSendEventRecordsPublishError(t *testing.T) {
+	pub := &Publisher{B: &failingBroker{publishErr: errors.New("boom")}}
+
+	err := pub.SendEvent(domain.Sensor{Sensor: "sensor-A"})
+	assert.Error(t, err)
+	assert.Equal(t, uint32(1), pub.publishErr)
 }
 
 func TestPublisher_Close(t *testing.T) {

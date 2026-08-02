@@ -51,9 +51,13 @@ func publishMetrics(hub *ws.Hub, dispatcher grpcapi.Dispatcher) {
 	startedAt := time.Now()
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
+	publishMetricsWithTicker(hub, dispatcher, ticker.C, startedAt)
+}
+
+func publishMetricsWithTicker(hub *ws.Hub, dispatcher grpcapi.Dispatcher, tick <-chan time.Time, startedAt time.Time) {
 	var previousDelivered uint64
 
-	for range ticker.C {
+	for range tick {
 		stats := hub.Stats()
 		delivered := stats.Delivered
 		dispatcher.PublishMetrics(&streamv1.IngestMetricsRequest{
