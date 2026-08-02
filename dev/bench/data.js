@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1772673751838,
+  "lastUpdate": 1785712239712,
   "repoUrl": "https://github.com/manaraph/stream-aggregator",
   "entries": {
     "Benchmark": [
@@ -332,6 +332,50 @@ window.BENCHMARK_DATA = {
             "value": 6,
             "unit": "allocs/op",
             "extra": "1917132 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "manaraph",
+            "username": "manaraph"
+          },
+          "committer": {
+            "name": "manaraph",
+            "username": "manaraph"
+          },
+          "id": "1676e8f1d8bde17b7285f32c984b979cf9c00642",
+          "message": "Expose metrics on websocket",
+          "timestamp": "2026-04-14T06:13:44Z",
+          "url": "https://github.com/manaraph/stream-aggregator/pull/8/commits/1676e8f1d8bde17b7285f32c984b979cf9c00642"
+        },
+        "date": 1785712238476,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkHubBroadcast",
+            "value": 255.6,
+            "unit": "ns/op\t      40 B/op\t       3 allocs/op",
+            "extra": "4660755 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - ns/op",
+            "value": 255.6,
+            "unit": "ns/op",
+            "extra": "4660755 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - B/op",
+            "value": 40,
+            "unit": "B/op",
+            "extra": "4660755 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - allocs/op",
+            "value": 3,
+            "unit": "allocs/op",
+            "extra": "4660755 times\n4 procs"
           }
         ]
       }
