@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"sync"
+	"sync/atomic"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/manaraph/stream-aggregator/internal/domain"
@@ -32,6 +33,7 @@ type Processor struct {
 	processed  uint64
 	dropped    uint64
 	maxUsed    uint32
+	grpcErrors uint32
 	WG         sync.WaitGroup
 	cancel     context.CancelFunc
 	ctx        context.Context
@@ -67,6 +69,7 @@ func (p *Processor) ForwardEvent(data domain.Sensor) {
 
 	if err != nil {
 		log.Println("gRPC send failed:", err)
+		atomic.AddUint32(&p.grpcErrors, 1)
 	}
 }
 
@@ -76,6 +79,7 @@ func (p *Processor) ForwardMetrics(metrics *streamv1.IngestMetricsRequest) {
 	}
 	if err := p.M.Send(metrics); err != nil {
 		log.Println("gRPC metrics send failed:", err)
+		atomic.AddUint32(&p.grpcErrors, 1)
 	}
 }
 

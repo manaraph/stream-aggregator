@@ -22,7 +22,7 @@ type mockDispatcher struct {
 
 func TestRegisterServices(t *testing.T) {
 	grpcServer := grpc.NewServer()
-	RegisterServices(grpcServer, ws.NewHub())
+	RegisterServices(grpcServer, NewWebSocketDispatcher(ws.NewHub()))
 
 	services := grpcServer.GetServiceInfo()
 	_, sensorsRegistered := services["stream.v1.SensorService"]
@@ -83,11 +83,10 @@ func TestIngestMetricsPublishesTypedEvent(t *testing.T) {
 	select {
 	case event := <-dispatcher.events:
 		assert.Equal(t, "metrics", event.Type)
-		got, ok := event.Data.(*streamv1.IngestMetricsRequest)
+		got, ok := event.Data.(events.MetricsData)
 		assert.True(t, ok, "received unexpected event data")
-		if diff := cmp.Diff(req, got, protocmp.Transform()); diff != "" {
-			t.Errorf("IngestMetricsRequest mismatch (-want +got):\n%s", diff)
-		}
+		assert.Equal(t, uint64(42), got.Queue.Processed)
+		assert.Equal(t, 12.5, got.Throughput.IngestionRate)
 	case <-time.After(time.Second):
 		t.Fatal("timeout: metrics event was not dispatched")
 	}

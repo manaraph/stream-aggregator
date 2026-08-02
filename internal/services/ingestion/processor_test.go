@@ -134,6 +134,8 @@ func TestReportQueueStatusForwardsMetrics(t *testing.T) {
 			Utilization: 50,
 		},
 		Throughput: &streamv1.ThroughputMetrics{IngestionRate: 1},
+		Grpc:       &streamv1.ConnectionMetrics{},
+		Broker:     &streamv1.ConnectionMetrics{},
 	}).Return(nil).Once()
 
 	processed := p.reportQueueStatus(4, 5*time.Second)

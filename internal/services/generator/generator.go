@@ -8,34 +8,52 @@ import (
 	"math/rand"
 	"os"
 	"strconv"
+	"sync/atomic"
 	"time"
 
 	"github.com/manaraph/stream-aggregator/internal/domain"
 	"github.com/manaraph/stream-aggregator/pkg/broker"
+	"github.com/manaraph/stream-aggregator/pkg/grpcapi"
+	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
+	"google.golang.org/grpc"
 )
 
 var interval time.Duration
 
 type Publisher struct {
-	B broker.Broker
+	B          broker.Broker
+	GRPC       *grpc.ClientConn
+	M          MetricsStreamClient
+	published  uint64
+	publishErr uint32
+}
+
+type MetricsStreamClient interface {
+	Send(*streamv1.IngestMetricsRequest) error
 }
 
 func (p *Publisher) SendEvent(e domain.Sensor) error {
 	data, _ := json.Marshal(e)
-	return p.B.Publish("sensors/temperature", data)
+	if err := p.B.Publish("sensors/temperature", data); err != nil {
+		atomic.AddUint32(&p.publishErr, 1)
+		return err
+	}
+	atomic.AddUint64(&p.published, 1)
+	return nil
 }
 
 func (p *Publisher) Run(ctx context.Context) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
+	metricsTicker := time.NewTicker(5 * time.Second)
+	defer metricsTicker.Stop()
+	var previousPublished uint64
 
-	for range ticker.C {
-
+	for {
 		select {
 		case <-ctx.Done():
 			log.Println("Publisher stopping: context cancelled")
 			return
-
 		case <-ticker.C:
 			event := domain.Sensor{
 				Sensor:    "sensor-" + string(rune('A'+rand.Intn(5))),
@@ -46,8 +64,36 @@ func (p *Publisher) Run(ctx context.Context) {
 			if err := p.SendEvent(event); err != nil {
 				log.Printf("Failed to send event: %v", err)
 			}
+		case <-metricsTicker.C:
+			previousPublished = p.reportMetrics(previousPublished, 5*time.Second)
 		}
 	}
+}
+
+func (p *Publisher) reportMetrics(previousPublished uint64, duration time.Duration) uint64 {
+	published := atomic.LoadUint64(&p.published)
+	if p.M == nil {
+		return published
+	}
+
+	metrics := &streamv1.IngestMetricsRequest{
+		Throughput: &streamv1.ThroughputMetrics{PublishRate: float64(published-previousPublished) / duration.Seconds()},
+		Broker:     &streamv1.ConnectionMetrics{Connected: p.B != nil, Errors: atomic.LoadUint32(&p.publishErr)},
+	}
+	if err := p.M.Send(metrics); err != nil {
+		log.Println("gRPC metrics send failed:", err)
+	}
+	return published
+}
+
+func (p *Publisher) Close() error {
+	if p.B != nil {
+		_ = p.B.Close()
+	}
+	if p.GRPC != nil {
+		return p.GRPC.Close()
+	}
+	return nil
 }
 
 func init() {
@@ -75,5 +121,23 @@ func NewPublisher() (*Publisher, error) {
 		return nil, err
 	}
 
-	return &Publisher{B: mclient}, nil
+	addr := os.Getenv("GATEWAY_ADDR")
+	if addr == "" {
+		_ = mclient.Close()
+		return nil, errors.New("GATEWAY_ADDR not defined")
+	}
+
+	_, conn, err := grpcapi.NewClient(addr)
+	if err != nil {
+		_ = mclient.Close()
+		return nil, err
+	}
+	metricsStream, err := streamv1.NewMetricsServiceClient(conn).IngestMetrics(context.Background())
+	if err != nil {
+		_ = mclient.Close()
+		_ = conn.Close()
+		return nil, err
+	}
+
+	return &Publisher{B: mclient, GRPC: conn, M: metricsStream}, nil
 }

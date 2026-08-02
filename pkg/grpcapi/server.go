@@ -6,7 +6,6 @@ import (
 
 	"github.com/manaraph/stream-aggregator/pkg/events"
 	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
-	"github.com/manaraph/stream-aggregator/pkg/ws"
 	"google.golang.org/grpc"
 )
 
@@ -16,8 +15,7 @@ type Server struct {
 	Dispatcher Dispatcher
 }
 
-func RegisterServices(grpcServer grpc.ServiceRegistrar, hub *ws.Hub) {
-	dispatcher := NewWebSocketDispatcher(hub)
+func RegisterServices(grpcServer grpc.ServiceRegistrar, dispatcher Dispatcher) {
 	server := &Server{Dispatcher: dispatcher}
 
 	streamv1.RegisterSensorServiceServer(grpcServer, server)

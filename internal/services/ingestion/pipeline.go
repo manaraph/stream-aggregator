@@ -109,6 +109,8 @@ func (p *Processor) reportQueueStatus(previousProcessed uint64, interval time.Du
 			Utilization: percent,
 		},
 		Throughput: &streamv1.ThroughputMetrics{IngestionRate: rate},
+		Grpc:       &streamv1.ConnectionMetrics{Connected: p.S != nil && p.M != nil, Errors: atomic.LoadUint32(&p.grpcErrors)},
+		Broker:     &streamv1.ConnectionMetrics{Connected: p.B != nil},
 	})
 
 	return processed
