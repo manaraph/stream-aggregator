@@ -38,16 +38,16 @@ func (d *WebSocketDispatcher) Publish(message events.Message) {
 	d.hub.Broadcast(b)
 }
 
-// PublishMetrics merges a partial metrics update into the latest snapshot.
-// Optional protobuf fields preserve absence, while an explicitly supplied zero
-// replaces the previously reported value.
 func (d *WebSocketDispatcher) PublishMetrics(update *streamv1.IngestMetricsRequest) {
+	if update == nil {
+		return
+	}
+
 	d.mu.Lock()
 	if d.metrics == nil {
-		d.metrics = proto.Clone(update).(*streamv1.IngestMetricsRequest)
-	} else {
-		proto.Merge(d.metrics, update)
+		d.metrics = &streamv1.IngestMetricsRequest{}
 	}
+	proto.Merge(d.metrics, update)
 	snapshot := proto.Clone(d.metrics).(*streamv1.IngestMetricsRequest)
 	d.mu.Unlock()
 

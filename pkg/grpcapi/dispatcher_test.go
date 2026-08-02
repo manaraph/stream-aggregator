@@ -24,3 +24,10 @@ func TestWebSocketDispatcherMergesPartialMetricUpdates(t *testing.T) {
 	assert.Equal(t, uint64(0), dispatcher.metrics.GetQueue().GetProcessed())
 	assert.Equal(t, uint32(100), dispatcher.metrics.GetQueue().GetCapacity())
 }
+
+func TestWebSocketDispatcherIgnoresNilMetricUpdates(t *testing.T) {
+	dispatcher := NewWebSocketDispatcher(ws.NewHub())
+	dispatcher.PublishMetrics(nil)
+
+	assert.Nil(t, dispatcher.metrics)
+}
