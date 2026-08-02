@@ -10,6 +10,7 @@ import (
 
 	"github.com/manaraph/stream-aggregator/internal/domain"
 	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
+	"google.golang.org/protobuf/proto"
 )
 
 func (p *Processor) initPipeline() {
@@ -101,16 +102,16 @@ func (p *Processor) reportQueueStatus(previousProcessed uint64, interval time.Du
 
 	p.ForwardMetrics(&streamv1.IngestMetricsRequest{
 		Queue: &streamv1.QueueMetrics{
-			Processed:   processed,
-			Dropped:     dropped,
-			Used:        uint32(used),
-			Capacity:    uint32(capacity),
-			MaxUsed:     atomic.LoadUint32(&p.maxUsed),
-			Utilization: percent,
+			Processed:   proto.Uint64(processed),
+			Dropped:     proto.Uint64(dropped),
+			Used:        proto.Uint32(uint32(used)),
+			Capacity:    proto.Uint32(uint32(capacity)),
+			MaxUsed:     proto.Uint32(atomic.LoadUint32(&p.maxUsed)),
+			Utilization: proto.Float64(percent),
 		},
-		Throughput: &streamv1.ThroughputMetrics{IngestionRate: rate},
-		Grpc:       &streamv1.ConnectionMetrics{Connected: p.S != nil && p.M != nil, Errors: atomic.LoadUint32(&p.grpcErrors)},
-		Broker:     &streamv1.ConnectionMetrics{Connected: p.B != nil},
+		Throughput: &streamv1.ThroughputMetrics{IngestionRate: proto.Float64(rate)},
+		Grpc:       &streamv1.ConnectionMetrics{Connected: proto.Bool(p.S != nil && p.M != nil), Errors: proto.Uint32(atomic.LoadUint32(&p.grpcErrors))},
+		Broker:     &streamv1.ConnectionMetrics{Connected: proto.Bool(p.B != nil)},
 	})
 
 	return processed

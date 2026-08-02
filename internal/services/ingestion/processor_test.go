@@ -14,6 +14,7 @@ import (
 	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"google.golang.org/protobuf/proto"
 )
 
 type MockStream struct {
@@ -127,15 +128,16 @@ func TestReportQueueStatusForwardsMetrics(t *testing.T) {
 
 	metricsStream.On("Send", &streamv1.IngestMetricsRequest{
 		Queue: &streamv1.QueueMetrics{
-			Processed:   9,
-			Dropped:     2,
-			Used:        2,
-			Capacity:    4,
-			Utilization: 50,
+			Processed:   proto.Uint64(9),
+			Dropped:     proto.Uint64(2),
+			Used:        proto.Uint32(2),
+			Capacity:    proto.Uint32(4),
+			MaxUsed:     proto.Uint32(0),
+			Utilization: proto.Float64(50),
 		},
-		Throughput: &streamv1.ThroughputMetrics{IngestionRate: 1},
-		Grpc:       &streamv1.ConnectionMetrics{},
-		Broker:     &streamv1.ConnectionMetrics{},
+		Throughput: &streamv1.ThroughputMetrics{IngestionRate: proto.Float64(1)},
+		Grpc:       &streamv1.ConnectionMetrics{Connected: proto.Bool(false), Errors: proto.Uint32(0)},
+		Broker:     &streamv1.ConnectionMetrics{Connected: proto.Bool(false)},
 	}).Return(nil).Once()
 
 	processed := p.reportQueueStatus(4, 5*time.Second)

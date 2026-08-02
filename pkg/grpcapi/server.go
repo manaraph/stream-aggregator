@@ -50,7 +50,6 @@ func (s *Server) IngestMetrics(stream streamv1.MetricsService_IngestMetricsServe
 			return err
 		}
 
-		msg := events.NewMetricsMessage(e)
-		s.Dispatcher.Publish(msg)
+		s.Dispatcher.PublishMetrics(e)
 	}
 }

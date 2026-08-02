@@ -17,26 +17,29 @@ func NewProcessor() (*Processor, error) {
 		return nil, errors.New("INGESTION_ID not defined")
 	}
 
-	mclient, err := broker.NewMQTTClient(clientId)
+	client, conn, err := grpcapi.ConnectGateway()
 	if err != nil {
 		return nil, err
 	}
 
-	client, conn, err := grpcapi.ConnectGateway()
+	mclient, err := broker.NewMQTTClient(clientId)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to connect to gRPC gateway: %w", err)
+		_ = conn.Close()
+		return nil, err
 	}
 
 	ctx := context.Background()
 	stream, err := client.IngestSensor(ctx)
 	if err != nil {
-		conn.Close()
+		_ = mclient.Close()
+		_ = conn.Close()
 		return nil, fmt.Errorf("Failed to open gRPC stream: %w", err)
 	}
 
 	metricsStream, err := streamv1.NewMetricsServiceClient(conn).IngestMetrics(ctx)
 	if err != nil {
-		conn.Close()
+		_ = mclient.Close()
+		_ = conn.Close()
 		return nil, fmt.Errorf("Failed to open metrics stream: %w", err)
 	}
 

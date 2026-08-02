@@ -23,12 +23,12 @@ const (
 
 type QueueMetrics struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Processed     uint64                 `protobuf:"varint,1,opt,name=processed,proto3" json:"processed,omitempty"`
-	Dropped       uint64                 `protobuf:"varint,2,opt,name=dropped,proto3" json:"dropped,omitempty"`
-	Used          uint32                 `protobuf:"varint,3,opt,name=used,proto3" json:"used,omitempty"`
-	Capacity      uint32                 `protobuf:"varint,4,opt,name=capacity,proto3" json:"capacity,omitempty"`
-	MaxUsed       uint32                 `protobuf:"varint,5,opt,name=max_used,json=maxUsed,proto3" json:"max_used,omitempty"`
-	Utilization   float64                `protobuf:"fixed64,6,opt,name=utilization,proto3" json:"utilization,omitempty"`
+	Processed     *uint64                `protobuf:"varint,1,opt,name=processed,proto3,oneof" json:"processed,omitempty"`
+	Dropped       *uint64                `protobuf:"varint,2,opt,name=dropped,proto3,oneof" json:"dropped,omitempty"`
+	Used          *uint32                `protobuf:"varint,3,opt,name=used,proto3,oneof" json:"used,omitempty"`
+	Capacity      *uint32                `protobuf:"varint,4,opt,name=capacity,proto3,oneof" json:"capacity,omitempty"`
+	MaxUsed       *uint32                `protobuf:"varint,5,opt,name=max_used,json=maxUsed,proto3,oneof" json:"max_used,omitempty"`
+	Utilization   *float64               `protobuf:"fixed64,6,opt,name=utilization,proto3,oneof" json:"utilization,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -64,53 +64,53 @@ func (*QueueMetrics) Descriptor() ([]byte, []int) {
 }
 
 func (x *QueueMetrics) GetProcessed() uint64 {
-	if x != nil {
-		return x.Processed
+	if x != nil && x.Processed != nil {
+		return *x.Processed
 	}
 	return 0
 }
 
 func (x *QueueMetrics) GetDropped() uint64 {
-	if x != nil {
-		return x.Dropped
+	if x != nil && x.Dropped != nil {
+		return *x.Dropped
 	}
 	return 0
 }
 
 func (x *QueueMetrics) GetUsed() uint32 {
-	if x != nil {
-		return x.Used
+	if x != nil && x.Used != nil {
+		return *x.Used
 	}
 	return 0
 }
 
 func (x *QueueMetrics) GetCapacity() uint32 {
-	if x != nil {
-		return x.Capacity
+	if x != nil && x.Capacity != nil {
+		return *x.Capacity
 	}
 	return 0
 }
 
 func (x *QueueMetrics) GetMaxUsed() uint32 {
-	if x != nil {
-		return x.MaxUsed
+	if x != nil && x.MaxUsed != nil {
+		return *x.MaxUsed
 	}
 	return 0
 }
 
 func (x *QueueMetrics) GetUtilization() float64 {
-	if x != nil {
-		return x.Utilization
+	if x != nil && x.Utilization != nil {
+		return *x.Utilization
 	}
 	return 0
 }
 
 type ThroughputMetrics struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	PublishRate   float64                `protobuf:"fixed64,1,opt,name=publish_rate,json=publishRate,proto3" json:"publish_rate,omitempty"`
-	IngestionRate float64                `protobuf:"fixed64,2,opt,name=ingestion_rate,json=ingestionRate,proto3" json:"ingestion_rate,omitempty"`
-	GrpcRate      float64                `protobuf:"fixed64,3,opt,name=grpc_rate,json=grpcRate,proto3" json:"grpc_rate,omitempty"`
-	WebsocketRate float64                `protobuf:"fixed64,4,opt,name=websocket_rate,json=websocketRate,proto3" json:"websocket_rate,omitempty"`
+	PublishRate   *float64               `protobuf:"fixed64,1,opt,name=publish_rate,json=publishRate,proto3,oneof" json:"publish_rate,omitempty"`
+	IngestionRate *float64               `protobuf:"fixed64,2,opt,name=ingestion_rate,json=ingestionRate,proto3,oneof" json:"ingestion_rate,omitempty"`
+	GrpcRate      *float64               `protobuf:"fixed64,3,opt,name=grpc_rate,json=grpcRate,proto3,oneof" json:"grpc_rate,omitempty"`
+	WebsocketRate *float64               `protobuf:"fixed64,4,opt,name=websocket_rate,json=websocketRate,proto3,oneof" json:"websocket_rate,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -146,38 +146,38 @@ func (*ThroughputMetrics) Descriptor() ([]byte, []int) {
 }
 
 func (x *ThroughputMetrics) GetPublishRate() float64 {
-	if x != nil {
-		return x.PublishRate
+	if x != nil && x.PublishRate != nil {
+		return *x.PublishRate
 	}
 	return 0
 }
 
 func (x *ThroughputMetrics) GetIngestionRate() float64 {
-	if x != nil {
-		return x.IngestionRate
+	if x != nil && x.IngestionRate != nil {
+		return *x.IngestionRate
 	}
 	return 0
 }
 
 func (x *ThroughputMetrics) GetGrpcRate() float64 {
-	if x != nil {
-		return x.GrpcRate
+	if x != nil && x.GrpcRate != nil {
+		return *x.GrpcRate
 	}
 	return 0
 }
 
 func (x *ThroughputMetrics) GetWebsocketRate() float64 {
-	if x != nil {
-		return x.WebsocketRate
+	if x != nil && x.WebsocketRate != nil {
+		return *x.WebsocketRate
 	}
 	return 0
 }
 
 type LatencyMetrics struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	AverageMs     uint32                 `protobuf:"varint,1,opt,name=average_ms,json=averageMs,proto3" json:"average_ms,omitempty"`
-	P95Ms         uint32                 `protobuf:"varint,2,opt,name=p95_ms,json=p95Ms,proto3" json:"p95_ms,omitempty"`
-	MaxMs         uint32                 `protobuf:"varint,3,opt,name=max_ms,json=maxMs,proto3" json:"max_ms,omitempty"`
+	AverageMs     *uint32                `protobuf:"varint,1,opt,name=average_ms,json=averageMs,proto3,oneof" json:"average_ms,omitempty"`
+	P95Ms         *uint32                `protobuf:"varint,2,opt,name=p95_ms,json=p95Ms,proto3,oneof" json:"p95_ms,omitempty"`
+	MaxMs         *uint32                `protobuf:"varint,3,opt,name=max_ms,json=maxMs,proto3,oneof" json:"max_ms,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -213,31 +213,31 @@ func (*LatencyMetrics) Descriptor() ([]byte, []int) {
 }
 
 func (x *LatencyMetrics) GetAverageMs() uint32 {
-	if x != nil {
-		return x.AverageMs
+	if x != nil && x.AverageMs != nil {
+		return *x.AverageMs
 	}
 	return 0
 }
 
 func (x *LatencyMetrics) GetP95Ms() uint32 {
-	if x != nil {
-		return x.P95Ms
+	if x != nil && x.P95Ms != nil {
+		return *x.P95Ms
 	}
 	return 0
 }
 
 func (x *LatencyMetrics) GetMaxMs() uint32 {
-	if x != nil {
-		return x.MaxMs
+	if x != nil && x.MaxMs != nil {
+		return *x.MaxMs
 	}
 	return 0
 }
 
 type ConnectionMetrics struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Connected     bool                   `protobuf:"varint,1,opt,name=connected,proto3" json:"connected,omitempty"`
-	Reconnects    uint32                 `protobuf:"varint,2,opt,name=reconnects,proto3" json:"reconnects,omitempty"`
-	Errors        uint32                 `protobuf:"varint,3,opt,name=errors,proto3" json:"errors,omitempty"`
+	Connected     *bool                  `protobuf:"varint,1,opt,name=connected,proto3,oneof" json:"connected,omitempty"`
+	Reconnects    *uint32                `protobuf:"varint,2,opt,name=reconnects,proto3,oneof" json:"reconnects,omitempty"`
+	Errors        *uint32                `protobuf:"varint,3,opt,name=errors,proto3,oneof" json:"errors,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -273,33 +273,33 @@ func (*ConnectionMetrics) Descriptor() ([]byte, []int) {
 }
 
 func (x *ConnectionMetrics) GetConnected() bool {
-	if x != nil {
-		return x.Connected
+	if x != nil && x.Connected != nil {
+		return *x.Connected
 	}
 	return false
 }
 
 func (x *ConnectionMetrics) GetReconnects() uint32 {
-	if x != nil {
-		return x.Reconnects
+	if x != nil && x.Reconnects != nil {
+		return *x.Reconnects
 	}
 	return 0
 }
 
 func (x *ConnectionMetrics) GetErrors() uint32 {
-	if x != nil {
-		return x.Errors
+	if x != nil && x.Errors != nil {
+		return *x.Errors
 	}
 	return 0
 }
 
 type RuntimeMetrics struct {
 	state             protoimpl.MessageState `protogen:"open.v1"`
-	UptimeSeconds     uint64                 `protobuf:"varint,1,opt,name=uptime_seconds,json=uptimeSeconds,proto3" json:"uptime_seconds,omitempty"`
-	Goroutines        uint32                 `protobuf:"varint,2,opt,name=goroutines,proto3" json:"goroutines,omitempty"`
-	MemoryBytes       uint64                 `protobuf:"varint,3,opt,name=memory_bytes,json=memoryBytes,proto3" json:"memory_bytes,omitempty"`
-	WebsocketClients  uint32                 `protobuf:"varint,4,opt,name=websocket_clients,json=websocketClients,proto3" json:"websocket_clients,omitempty"`
-	BackpressureLevel uint32                 `protobuf:"varint,5,opt,name=backpressure_level,json=backpressureLevel,proto3" json:"backpressure_level,omitempty"`
+	UptimeSeconds     *uint64                `protobuf:"varint,1,opt,name=uptime_seconds,json=uptimeSeconds,proto3,oneof" json:"uptime_seconds,omitempty"`
+	Goroutines        *uint32                `protobuf:"varint,2,opt,name=goroutines,proto3,oneof" json:"goroutines,omitempty"`
+	MemoryBytes       *uint64                `protobuf:"varint,3,opt,name=memory_bytes,json=memoryBytes,proto3,oneof" json:"memory_bytes,omitempty"`
+	WebsocketClients  *uint32                `protobuf:"varint,4,opt,name=websocket_clients,json=websocketClients,proto3,oneof" json:"websocket_clients,omitempty"`
+	BackpressureLevel *uint32                `protobuf:"varint,5,opt,name=backpressure_level,json=backpressureLevel,proto3,oneof" json:"backpressure_level,omitempty"`
 	unknownFields     protoimpl.UnknownFields
 	sizeCache         protoimpl.SizeCache
 }
@@ -335,36 +335,36 @@ func (*RuntimeMetrics) Descriptor() ([]byte, []int) {
 }
 
 func (x *RuntimeMetrics) GetUptimeSeconds() uint64 {
-	if x != nil {
-		return x.UptimeSeconds
+	if x != nil && x.UptimeSeconds != nil {
+		return *x.UptimeSeconds
 	}
 	return 0
 }
 
 func (x *RuntimeMetrics) GetGoroutines() uint32 {
-	if x != nil {
-		return x.Goroutines
+	if x != nil && x.Goroutines != nil {
+		return *x.Goroutines
 	}
 	return 0
 }
 
 func (x *RuntimeMetrics) GetMemoryBytes() uint64 {
-	if x != nil {
-		return x.MemoryBytes
+	if x != nil && x.MemoryBytes != nil {
+		return *x.MemoryBytes
 	}
 	return 0
 }
 
 func (x *RuntimeMetrics) GetWebsocketClients() uint32 {
-	if x != nil {
-		return x.WebsocketClients
+	if x != nil && x.WebsocketClients != nil {
+		return *x.WebsocketClients
 	}
 	return 0
 }
 
 func (x *RuntimeMetrics) GetBackpressureLevel() uint32 {
-	if x != nil {
-		return x.BackpressureLevel
+	if x != nil && x.BackpressureLevel != nil {
+		return *x.BackpressureLevel
 	}
 	return 0
 }
@@ -493,38 +493,63 @@ var File_stream_v1_metrics_proto protoreflect.FileDescriptor
 
 const file_stream_v1_metrics_proto_rawDesc = "" +
 	"\n" +
-	"\x17stream/v1/metrics.proto\x12\tstream.v1\"\xb3\x01\n" +
-	"\fQueueMetrics\x12\x1c\n" +
-	"\tprocessed\x18\x01 \x01(\x04R\tprocessed\x12\x18\n" +
-	"\adropped\x18\x02 \x01(\x04R\adropped\x12\x12\n" +
-	"\x04used\x18\x03 \x01(\rR\x04used\x12\x1a\n" +
-	"\bcapacity\x18\x04 \x01(\rR\bcapacity\x12\x19\n" +
-	"\bmax_used\x18\x05 \x01(\rR\amaxUsed\x12 \n" +
-	"\vutilization\x18\x06 \x01(\x01R\vutilization\"\xa1\x01\n" +
-	"\x11ThroughputMetrics\x12!\n" +
-	"\fpublish_rate\x18\x01 \x01(\x01R\vpublishRate\x12%\n" +
-	"\x0eingestion_rate\x18\x02 \x01(\x01R\ringestionRate\x12\x1b\n" +
-	"\tgrpc_rate\x18\x03 \x01(\x01R\bgrpcRate\x12%\n" +
-	"\x0ewebsocket_rate\x18\x04 \x01(\x01R\rwebsocketRate\"]\n" +
-	"\x0eLatencyMetrics\x12\x1d\n" +
+	"\x17stream/v1/metrics.proto\x12\tstream.v1\"\x9e\x02\n" +
+	"\fQueueMetrics\x12!\n" +
+	"\tprocessed\x18\x01 \x01(\x04H\x00R\tprocessed\x88\x01\x01\x12\x1d\n" +
+	"\adropped\x18\x02 \x01(\x04H\x01R\adropped\x88\x01\x01\x12\x17\n" +
+	"\x04used\x18\x03 \x01(\rH\x02R\x04used\x88\x01\x01\x12\x1f\n" +
+	"\bcapacity\x18\x04 \x01(\rH\x03R\bcapacity\x88\x01\x01\x12\x1e\n" +
+	"\bmax_used\x18\x05 \x01(\rH\x04R\amaxUsed\x88\x01\x01\x12%\n" +
+	"\vutilization\x18\x06 \x01(\x01H\x05R\vutilization\x88\x01\x01B\f\n" +
 	"\n" +
-	"average_ms\x18\x01 \x01(\rR\taverageMs\x12\x15\n" +
-	"\x06p95_ms\x18\x02 \x01(\rR\x05p95Ms\x12\x15\n" +
-	"\x06max_ms\x18\x03 \x01(\rR\x05maxMs\"i\n" +
-	"\x11ConnectionMetrics\x12\x1c\n" +
-	"\tconnected\x18\x01 \x01(\bR\tconnected\x12\x1e\n" +
+	"_processedB\n" +
 	"\n" +
-	"reconnects\x18\x02 \x01(\rR\n" +
-	"reconnects\x12\x16\n" +
-	"\x06errors\x18\x03 \x01(\rR\x06errors\"\xd6\x01\n" +
-	"\x0eRuntimeMetrics\x12%\n" +
-	"\x0euptime_seconds\x18\x01 \x01(\x04R\ruptimeSeconds\x12\x1e\n" +
+	"\b_droppedB\a\n" +
+	"\x05_usedB\v\n" +
+	"\t_capacityB\v\n" +
+	"\t_max_usedB\x0e\n" +
+	"\f_utilization\"\xfa\x01\n" +
+	"\x11ThroughputMetrics\x12&\n" +
+	"\fpublish_rate\x18\x01 \x01(\x01H\x00R\vpublishRate\x88\x01\x01\x12*\n" +
+	"\x0eingestion_rate\x18\x02 \x01(\x01H\x01R\ringestionRate\x88\x01\x01\x12 \n" +
+	"\tgrpc_rate\x18\x03 \x01(\x01H\x02R\bgrpcRate\x88\x01\x01\x12*\n" +
+	"\x0ewebsocket_rate\x18\x04 \x01(\x01H\x03R\rwebsocketRate\x88\x01\x01B\x0f\n" +
+	"\r_publish_rateB\x11\n" +
+	"\x0f_ingestion_rateB\f\n" +
 	"\n" +
-	"goroutines\x18\x02 \x01(\rR\n" +
-	"goroutines\x12!\n" +
-	"\fmemory_bytes\x18\x03 \x01(\x04R\vmemoryBytes\x12+\n" +
-	"\x11websocket_clients\x18\x04 \x01(\rR\x10websocketClients\x12-\n" +
-	"\x12backpressure_level\x18\x05 \x01(\rR\x11backpressureLevel\"\xd5\x02\n" +
+	"_grpc_rateB\x11\n" +
+	"\x0f_websocket_rate\"\x91\x01\n" +
+	"\x0eLatencyMetrics\x12\"\n" +
+	"\n" +
+	"average_ms\x18\x01 \x01(\rH\x00R\taverageMs\x88\x01\x01\x12\x1a\n" +
+	"\x06p95_ms\x18\x02 \x01(\rH\x01R\x05p95Ms\x88\x01\x01\x12\x1a\n" +
+	"\x06max_ms\x18\x03 \x01(\rH\x02R\x05maxMs\x88\x01\x01B\r\n" +
+	"\v_average_msB\t\n" +
+	"\a_p95_msB\t\n" +
+	"\a_max_ms\"\xa0\x01\n" +
+	"\x11ConnectionMetrics\x12!\n" +
+	"\tconnected\x18\x01 \x01(\bH\x00R\tconnected\x88\x01\x01\x12#\n" +
+	"\n" +
+	"reconnects\x18\x02 \x01(\rH\x01R\n" +
+	"reconnects\x88\x01\x01\x12\x1b\n" +
+	"\x06errors\x18\x03 \x01(\rH\x02R\x06errors\x88\x01\x01B\f\n" +
+	"\n" +
+	"_connectedB\r\n" +
+	"\v_reconnectsB\t\n" +
+	"\a_errors\"\xcf\x02\n" +
+	"\x0eRuntimeMetrics\x12*\n" +
+	"\x0euptime_seconds\x18\x01 \x01(\x04H\x00R\ruptimeSeconds\x88\x01\x01\x12#\n" +
+	"\n" +
+	"goroutines\x18\x02 \x01(\rH\x01R\n" +
+	"goroutines\x88\x01\x01\x12&\n" +
+	"\fmemory_bytes\x18\x03 \x01(\x04H\x02R\vmemoryBytes\x88\x01\x01\x120\n" +
+	"\x11websocket_clients\x18\x04 \x01(\rH\x03R\x10websocketClients\x88\x01\x01\x122\n" +
+	"\x12backpressure_level\x18\x05 \x01(\rH\x04R\x11backpressureLevel\x88\x01\x01B\x11\n" +
+	"\x0f_uptime_secondsB\r\n" +
+	"\v_goroutinesB\x0f\n" +
+	"\r_memory_bytesB\x14\n" +
+	"\x12_websocket_clientsB\x15\n" +
+	"\x13_backpressure_level\"\xd5\x02\n" +
 	"\x14IngestMetricsRequest\x12-\n" +
 	"\x05queue\x18\x01 \x01(\v2\x17.stream.v1.QueueMetricsR\x05queue\x12<\n" +
 	"\n" +
@@ -581,6 +606,11 @@ func file_stream_v1_metrics_proto_init() {
 	if File_stream_v1_metrics_proto != nil {
 		return
 	}
+	file_stream_v1_metrics_proto_msgTypes[0].OneofWrappers = []any{}
+	file_stream_v1_metrics_proto_msgTypes[1].OneofWrappers = []any{}
+	file_stream_v1_metrics_proto_msgTypes[2].OneofWrappers = []any{}
+	file_stream_v1_metrics_proto_msgTypes[3].OneofWrappers = []any{}
+	file_stream_v1_metrics_proto_msgTypes[4].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

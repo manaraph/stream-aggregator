@@ -12,6 +12,7 @@ import (
 	"github.com/manaraph/stream-aggregator/pkg/ws"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -33,6 +34,10 @@ func TestRegisterServices(t *testing.T) {
 
 func (m *mockDispatcher) Publish(event events.Message) {
 	m.events <- event
+}
+
+func (m *mockDispatcher) PublishMetrics(metrics *streamv1.IngestMetricsRequest) {
+	m.Publish(events.NewMetricsMessage(metrics))
 }
 
 // Mock gRPC Stream
@@ -66,8 +71,8 @@ func (m *mockIngestStream) Recv() (*streamv1.IngestSensorRequest, error) {
 
 func TestIngestMetricsPublishesTypedEvent(t *testing.T) {
 	req := &streamv1.IngestMetricsRequest{
-		Queue:      &streamv1.QueueMetrics{Processed: 42},
-		Throughput: &streamv1.ThroughputMetrics{IngestionRate: 12.5},
+		Queue:      &streamv1.QueueMetrics{Processed: proto.Uint64(42)},
+		Throughput: &streamv1.ThroughputMetrics{IngestionRate: proto.Float64(12.5)},
 	}
 	dispatcher := &mockDispatcher{events: make(chan events.Message, 1)}
 	stream := &mockMetricsStream{reqCh: make(chan *streamv1.IngestMetricsRequest, 1)}

@@ -6,11 +6,11 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/manaraph/stream-aggregator/pkg/events"
 	"github.com/manaraph/stream-aggregator/pkg/grpcapi"
 	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 	"github.com/manaraph/stream-aggregator/pkg/ws"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/proto"
 )
 
 type Gateway struct {
@@ -56,16 +56,16 @@ func publishMetrics(hub *ws.Hub, dispatcher grpcapi.Dispatcher) {
 	for range ticker.C {
 		stats := hub.Stats()
 		delivered := stats.Delivered
-		dispatcher.Publish(events.NewMetricsMessage(&streamv1.IngestMetricsRequest{
-			Throughput: &streamv1.ThroughputMetrics{WebsocketRate: float64(delivered-previousDelivered) / 5},
+		dispatcher.PublishMetrics(&streamv1.IngestMetricsRequest{
+			Throughput: &streamv1.ThroughputMetrics{WebsocketRate: proto.Float64(float64(delivered-previousDelivered) / 5)},
 			Runtime: &streamv1.RuntimeMetrics{
-				UptimeSeconds:     uint64(time.Since(startedAt).Seconds()),
-				Goroutines:        uint32(runtime.NumGoroutine()),
-				MemoryBytes:       allocatedMemory(),
-				WebsocketClients:  stats.Clients,
-				BackpressureLevel: stats.BackpressureLevel,
+				UptimeSeconds:     proto.Uint64(uint64(time.Since(startedAt).Seconds())),
+				Goroutines:        proto.Uint32(uint32(runtime.NumGoroutine())),
+				MemoryBytes:       proto.Uint64(allocatedMemory()),
+				WebsocketClients:  proto.Uint32(stats.Clients),
+				BackpressureLevel: proto.Uint32(stats.BackpressureLevel),
 			},
-		}))
+		})
 		previousDelivered = delivered
 	}
 }

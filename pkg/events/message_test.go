@@ -7,13 +7,14 @@ import (
 
 	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/proto"
 )
 
 func TestNewMetricsMessageUsesCamelCaseJSON(t *testing.T) {
 	message := NewMetricsMessage(&streamv1.IngestMetricsRequest{
-		Queue:      &streamv1.QueueMetrics{MaxUsed: 3},
-		Throughput: &streamv1.ThroughputMetrics{WebsocketRate: 2.5},
-		Runtime:    &streamv1.RuntimeMetrics{UptimeSeconds: 10, BackpressureLevel: 4},
+		Queue:      &streamv1.QueueMetrics{MaxUsed: proto.Uint32(3)},
+		Throughput: &streamv1.ThroughputMetrics{WebsocketRate: proto.Float64(2.5)},
+		Runtime:    &streamv1.RuntimeMetrics{UptimeSeconds: proto.Uint64(10), BackpressureLevel: proto.Uint32(4)},
 	})
 
 	payload, err := json.Marshal(message)
