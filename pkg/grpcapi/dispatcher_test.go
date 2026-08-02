@@ -31,3 +31,17 @@ func TestWebSocketDispatcherIgnoresNilMetricUpdates(t *testing.T) {
 
 	assert.Nil(t, dispatcher.metrics)
 }
+
+func TestWebSocketDispatcherPublishesSnapshotAfterMerge(t *testing.T) {
+	dispatcher := NewWebSocketDispatcher(ws.NewHub())
+	dispatcher.PublishMetrics(&streamv1.IngestMetricsRequest{
+		Queue: &streamv1.QueueMetrics{Processed: proto.Uint64(5)},
+	})
+	dispatcher.PublishMetrics(&streamv1.IngestMetricsRequest{
+		Queue: &streamv1.QueueMetrics{Capacity: proto.Uint32(100)},
+	})
+
+	assert.NotNil(t, dispatcher.metrics)
+	assert.Equal(t, uint64(5), dispatcher.metrics.GetQueue().GetProcessed())
+	assert.Equal(t, uint32(100), dispatcher.metrics.GetQueue().GetCapacity())
+}

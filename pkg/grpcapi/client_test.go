@@ -29,3 +29,15 @@ func TestNewClient(t *testing.T) {
 
 	conn.Close()
 }
+
+func TestConnectGatewayRequiresAddress(t *testing.T) {
+	t.Setenv("GATEWAY_ADDR", "")
+
+	client, conn, err := ConnectGateway()
+	if err == nil {
+		t.Fatal("expected an error when GATEWAY_ADDR is missing")
+	}
+	if client != nil || conn != nil {
+		t.Fatal("expected nil client and connection when GATEWAY_ADDR is missing")
+	}
+}

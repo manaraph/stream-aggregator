@@ -3,14 +3,27 @@ package generator
 import (
 	"context"
 	"encoding/json"
+	"net"
 	"os"
 	"testing"
 	"time"
 
 	"github.com/manaraph/stream-aggregator/internal/domain"
 	"github.com/manaraph/stream-aggregator/pkg/broker"
+	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
+
+type stubMetricsClient struct {
+	requests []*streamv1.IngestMetricsRequest
+}
+
+func (s *stubMetricsClient) Send(req *streamv1.IngestMetricsRequest) error {
+	s.requests = append(s.requests, req)
+	return nil
+}
 
 func TestPublisher_Run(t *testing.T) {
 	interval = 10 * time.Millisecond
@@ -72,6 +85,46 @@ func TestSendEvent(t *testing.T) {
 	case <-time.After(100 * time.Millisecond):
 		t.Fatal("Timeout: Broker never received the message")
 	}
+}
+
+func TestPublisher_ReportMetrics(t *testing.T) {
+	fake := broker.NewFakeBroker()
+	pub := &Publisher{B: fake, published: 5, publishErr: 2}
+
+	assert.Equal(t, uint64(5), pub.reportMetrics(2, 5*time.Second))
+
+	client := &stubMetricsClient{}
+	pub.M = client
+	assert.Equal(t, uint64(5), pub.reportMetrics(2, 5*time.Second))
+	if assert.Len(t, client.requests, 1) {
+		request := client.requests[0]
+		assert.NotNil(t, request.GetThroughput())
+		assert.NotNil(t, request.GetBroker())
+		assert.Equal(t, float64(3)/5, request.GetThroughput().GetPublishRate())
+		assert.True(t, request.GetBroker().GetConnected())
+		assert.Equal(t, uint32(2), request.GetBroker().GetErrors())
+	}
+}
+
+func TestPublisher_Close(t *testing.T) {
+	fake := broker.NewFakeBroker()
+	pub := &Publisher{B: fake}
+	assert.NoError(t, pub.Close())
+
+	lis, err := net.Listen("tcp", "127.0.0.1:0")
+	assert.NoError(t, err)
+	defer lis.Close()
+
+	s := grpc.NewServer()
+	go s.Serve(lis)
+	defer s.Stop()
+
+	conn, err := grpc.NewClient(lis.Addr().String(), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	assert.NoError(t, err)
+	defer conn.Close()
+
+	pubWithConn := &Publisher{GRPC: conn}
+	assert.NoError(t, pubWithConn.Close())
 }
 
 func TestNewPublisherFromEnv(t *testing.T) {

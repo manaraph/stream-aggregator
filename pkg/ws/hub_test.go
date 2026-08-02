@@ -37,3 +37,19 @@ func TestHubRegisterBroadcastUnregister(t *testing.T) {
 		t.Fatal("expected channel closed")
 	}
 }
+
+func TestHubStatsReportsRuntimeState(t *testing.T) {
+	h := NewHub()
+	go h.Run()
+
+	stats := h.Stats()
+	if stats.Clients != 0 || stats.Delivered != 0 || stats.BackpressureLevel != 0 {
+		t.Fatalf("expected empty stats, got %+v", stats)
+	}
+
+	h.Broadcast([]byte(`{"msg": "hello"}`))
+	stats = h.Stats()
+	if stats.BackpressureLevel == 0 {
+		t.Fatal("expected backpressure level to reflect queued events")
+	}
+}

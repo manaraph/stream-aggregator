@@ -14,3 +14,8 @@ func TestGatewayStarts(t *testing.T) {
 
 	time.Sleep(50 * time.Millisecond) // ensure goroutines started
 }
+
+func TestAllocatedMemoryReturnsValue(t *testing.T) {
+	mem := allocatedMemory()
+	require.Greater(t, mem, uint64(0))
+}
