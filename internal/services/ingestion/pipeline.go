@@ -56,10 +56,20 @@ func (p *Processor) enqueueEvent(e domain.Sensor) {
 	select {
 	case p.eventQueue <- e:
 		atomic.AddUint64(&p.processed, 1)
+		p.recordQueueHighWaterMark(uint32(len(p.eventQueue)))
 	default:
 		log.Println("WARNING: ingestion queue full, dropping event")
 		atomic.AddUint64(&p.dropped, 1)
 		p.WG.Done()
+	}
+}
+
+func (p *Processor) recordQueueHighWaterMark(used uint32) {
+	for {
+		maxUsed := atomic.LoadUint32(&p.maxUsed)
+		if used <= maxUsed || atomic.CompareAndSwapUint32(&p.maxUsed, maxUsed, used) {
+			return
+		}
 	}
 }
 
@@ -89,13 +99,16 @@ func (p *Processor) reportQueueStatus(previousProcessed uint64, interval time.Du
 	dropped := atomic.LoadUint64(&p.dropped)
 	rate := float64(processed-previousProcessed) / interval.Seconds()
 
-	p.ForwardMetrics(&streamv1.StreamMetricsRequest{
-		Processed:     processed,
-		Dropped:       dropped,
-		QueueUsed:     uint32(used),
-		QueueCapacity: uint32(capacity),
-		QueuePercent:  percent,
-		Rate:          rate,
+	p.ForwardMetrics(&streamv1.IngestMetricsRequest{
+		Queue: &streamv1.QueueMetrics{
+			Processed:   processed,
+			Dropped:     dropped,
+			Used:        uint32(used),
+			Capacity:    uint32(capacity),
+			MaxUsed:     atomic.LoadUint32(&p.maxUsed),
+			Utilization: percent,
+		},
+		Throughput: &streamv1.ThroughputMetrics{IngestionRate: rate},
 	})
 
 	return processed

@@ -24,7 +24,7 @@ type MockMetricsStream struct {
 	mock.Mock
 }
 
-func (m *MockMetricsStream) Send(req *streamv1.StreamMetricsRequest) error {
+func (m *MockMetricsStream) Send(req *streamv1.IngestMetricsRequest) error {
 	args := m.Called(req)
 	return args.Error(0)
 }
@@ -125,13 +125,15 @@ func TestReportQueueStatusForwardsMetrics(t *testing.T) {
 	p.eventQueue <- domain.Sensor{}
 	p.eventQueue <- domain.Sensor{}
 
-	metricsStream.On("Send", &streamv1.StreamMetricsRequest{
-		Processed:     9,
-		Dropped:       2,
-		QueueUsed:     2,
-		QueueCapacity: 4,
-		QueuePercent:  50,
-		Rate:          1,
+	metricsStream.On("Send", &streamv1.IngestMetricsRequest{
+		Queue: &streamv1.QueueMetrics{
+			Processed:   9,
+			Dropped:     2,
+			Used:        2,
+			Capacity:    4,
+			Utilization: 50,
+		},
+		Throughput: &streamv1.ThroughputMetrics{IngestionRate: 1},
 	}).Return(nil).Once()
 
 	processed := p.reportQueueStatus(4, 5*time.Second)

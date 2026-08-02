@@ -8,6 +8,7 @@ import (
 
 	"github.com/manaraph/stream-aggregator/pkg/broker"
 	"github.com/manaraph/stream-aggregator/pkg/grpcapi"
+	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 )
 
 func NewProcessor() (*Processor, error) {
@@ -39,7 +40,7 @@ func NewProcessor() (*Processor, error) {
 		return nil, fmt.Errorf("Failed to open gRPC stream: %w", err)
 	}
 
-	metricsStream, err := client.StreamMetrics(ctx)
+	metricsStream, err := streamv1.NewMetricsServiceClient(conn).IngestMetrics(ctx)
 	if err != nil {
 		conn.Close()
 		return nil, fmt.Errorf("Failed to open metrics stream: %w", err)

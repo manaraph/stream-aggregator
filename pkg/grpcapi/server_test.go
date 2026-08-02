@@ -9,13 +9,26 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/manaraph/stream-aggregator/pkg/events"
 	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
+	"github.com/manaraph/stream-aggregator/pkg/ws"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc"
 	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type mockDispatcher struct {
 	events chan events.Message
+}
+
+func TestRegisterServices(t *testing.T) {
+	grpcServer := grpc.NewServer()
+	RegisterServices(grpcServer, ws.NewHub())
+
+	services := grpcServer.GetServiceInfo()
+	_, sensorsRegistered := services["stream.v1.SensorService"]
+	_, metricsRegistered := services["stream.v1.MetricsService"]
+	assert.True(t, sensorsRegistered)
+	assert.True(t, metricsRegistered)
 }
 
 func (m *mockDispatcher) Publish(event events.Message) {
@@ -31,11 +44,11 @@ type mockIngestStream struct {
 }
 
 type mockMetricsStream struct {
-	streamv1.SensorService_StreamMetricsServer
-	reqCh chan *streamv1.StreamMetricsRequest
+	streamv1.MetricsService_IngestMetricsServer
+	reqCh chan *streamv1.IngestMetricsRequest
 }
 
-func (m *mockMetricsStream) Recv() (*streamv1.StreamMetricsRequest, error) {
+func (m *mockMetricsStream) Recv() (*streamv1.IngestMetricsRequest, error) {
 	req, ok := <-m.reqCh
 	if !ok {
 		return nil, io.EOF
@@ -51,14 +64,17 @@ func (m *mockIngestStream) Recv() (*streamv1.IngestSensorRequest, error) {
 	return req, nil
 }
 
-func TestStreamMetricsPublishesTypedEvent(t *testing.T) {
-	req := &streamv1.StreamMetricsRequest{Processed: 42, Rate: 12.5}
+func TestIngestMetricsPublishesTypedEvent(t *testing.T) {
+	req := &streamv1.IngestMetricsRequest{
+		Queue:      &streamv1.QueueMetrics{Processed: 42},
+		Throughput: &streamv1.ThroughputMetrics{IngestionRate: 12.5},
+	}
 	dispatcher := &mockDispatcher{events: make(chan events.Message, 1)}
-	stream := &mockMetricsStream{reqCh: make(chan *streamv1.StreamMetricsRequest, 1)}
+	stream := &mockMetricsStream{reqCh: make(chan *streamv1.IngestMetricsRequest, 1)}
 	server := &Server{Dispatcher: dispatcher}
 
 	go func() {
-		_ = server.StreamMetrics(stream)
+		_ = server.IngestMetrics(stream)
 	}()
 
 	stream.reqCh <- req
@@ -67,10 +83,10 @@ func TestStreamMetricsPublishesTypedEvent(t *testing.T) {
 	select {
 	case event := <-dispatcher.events:
 		assert.Equal(t, "metrics", event.Type)
-		got, ok := event.Data.(*streamv1.StreamMetricsRequest)
+		got, ok := event.Data.(*streamv1.IngestMetricsRequest)
 		assert.True(t, ok, "received unexpected event data")
 		if diff := cmp.Diff(req, got, protocmp.Transform()); diff != "" {
-			t.Errorf("StreamMetricsRequest mismatch (-want +got):\n%s", diff)
+			t.Errorf("IngestMetricsRequest mismatch (-want +got):\n%s", diff)
 		}
 	case <-time.After(time.Second):
 		t.Fatal("timeout: metrics event was not dispatched")

@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/manaraph/stream-aggregator/pkg/grpcapi"
-	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 	"github.com/manaraph/stream-aggregator/pkg/ws"
 	"google.golang.org/grpc"
 )
@@ -25,7 +24,7 @@ func NewGateway(grpcAddr, httpAddr string) (*Gateway, error) {
 	}
 
 	grpcServer := grpc.NewServer()
-	streamv1.RegisterSensorServiceServer(grpcServer, &grpcapi.Server{Dispatcher: NewDispatcher(hub)})
+	grpcapi.RegisterServices(grpcServer, hub)
 
 	go hub.Run()
 	go grpcServer.Serve(lis)

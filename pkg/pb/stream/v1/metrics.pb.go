@@ -294,13 +294,14 @@ func (x *ConnectionMetrics) GetErrors() uint32 {
 }
 
 type RuntimeMetrics struct {
-	state            protoimpl.MessageState `protogen:"open.v1"`
-	UptimeSeconds    uint64                 `protobuf:"varint,1,opt,name=uptime_seconds,json=uptimeSeconds,proto3" json:"uptime_seconds,omitempty"`
-	Goroutines       uint32                 `protobuf:"varint,2,opt,name=goroutines,proto3" json:"goroutines,omitempty"`
-	MemoryBytes      uint64                 `protobuf:"varint,3,opt,name=memory_bytes,json=memoryBytes,proto3" json:"memory_bytes,omitempty"`
-	WebsocketClients uint32                 `protobuf:"varint,4,opt,name=websocket_clients,json=websocketClients,proto3" json:"websocket_clients,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	UptimeSeconds     uint64                 `protobuf:"varint,1,opt,name=uptime_seconds,json=uptimeSeconds,proto3" json:"uptime_seconds,omitempty"`
+	Goroutines        uint32                 `protobuf:"varint,2,opt,name=goroutines,proto3" json:"goroutines,omitempty"`
+	MemoryBytes       uint64                 `protobuf:"varint,3,opt,name=memory_bytes,json=memoryBytes,proto3" json:"memory_bytes,omitempty"`
+	WebsocketClients  uint32                 `protobuf:"varint,4,opt,name=websocket_clients,json=websocketClients,proto3" json:"websocket_clients,omitempty"`
+	BackpressureLevel uint32                 `protobuf:"varint,5,opt,name=backpressure_level,json=backpressureLevel,proto3" json:"backpressure_level,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
 }
 
 func (x *RuntimeMetrics) Reset() {
@@ -357,6 +358,13 @@ func (x *RuntimeMetrics) GetMemoryBytes() uint64 {
 func (x *RuntimeMetrics) GetWebsocketClients() uint32 {
 	if x != nil {
 		return x.WebsocketClients
+	}
+	return 0
+}
+
+func (x *RuntimeMetrics) GetBackpressureLevel() uint32 {
+	if x != nil {
+		return x.BackpressureLevel
 	}
 	return 0
 }
@@ -508,14 +516,15 @@ const file_stream_v1_metrics_proto_rawDesc = "" +
 	"\n" +
 	"reconnects\x18\x02 \x01(\rR\n" +
 	"reconnects\x12\x16\n" +
-	"\x06errors\x18\x03 \x01(\rR\x06errors\"\xa7\x01\n" +
+	"\x06errors\x18\x03 \x01(\rR\x06errors\"\xd6\x01\n" +
 	"\x0eRuntimeMetrics\x12%\n" +
 	"\x0euptime_seconds\x18\x01 \x01(\x04R\ruptimeSeconds\x12\x1e\n" +
 	"\n" +
 	"goroutines\x18\x02 \x01(\rR\n" +
 	"goroutines\x12!\n" +
 	"\fmemory_bytes\x18\x03 \x01(\x04R\vmemoryBytes\x12+\n" +
-	"\x11websocket_clients\x18\x04 \x01(\rR\x10websocketClients\"\xd5\x02\n" +
+	"\x11websocket_clients\x18\x04 \x01(\rR\x10websocketClients\x12-\n" +
+	"\x12backpressure_level\x18\x05 \x01(\rR\x11backpressureLevel\"\xd5\x02\n" +
 	"\x14IngestMetricsRequest\x12-\n" +
 	"\x05queue\x18\x01 \x01(\v2\x17.stream.v1.QueueMetricsR\x05queue\x12<\n" +
 	"\n" +

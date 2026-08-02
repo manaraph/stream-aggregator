@@ -15,22 +15,23 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-type StreamClient interface {
+type SensorStreamClient interface {
 	Send(*streamv1.IngestSensorRequest) error
 }
 
 type MetricsStreamClient interface {
-	Send(*streamv1.StreamMetricsRequest) error
+	Send(*streamv1.IngestMetricsRequest) error
 }
 
 type Processor struct {
 	B          broker.Broker
 	GRPC       *grpc.ClientConn
-	S          StreamClient
+	S          SensorStreamClient
 	M          MetricsStreamClient
 	eventQueue chan domain.Sensor
 	processed  uint64
 	dropped    uint64
+	maxUsed    uint32
 	WG         sync.WaitGroup
 	cancel     context.CancelFunc
 	ctx        context.Context
@@ -69,7 +70,7 @@ func (p *Processor) ForwardEvent(data domain.Sensor) {
 	}
 }
 
-func (p *Processor) ForwardMetrics(metrics *streamv1.StreamMetricsRequest) {
+func (p *Processor) ForwardMetrics(metrics *streamv1.IngestMetricsRequest) {
 	if p.M == nil {
 		return
 	}

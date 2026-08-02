@@ -41,6 +41,7 @@ message RuntimeMetrics {
   uint32 goroutines = 2;
   uint64 memory_bytes = 3;
   uint32 websocket_clients = 4;
+  uint32 backpressure_level = 5;
 }
 
 message IngestMetricsRequest {
