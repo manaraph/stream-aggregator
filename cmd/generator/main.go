@@ -19,6 +19,7 @@ func main() {
 		log.Println("connection failed: ", err)
 		return
 	}
+	defer p.Close()
 
 	p.Run(ctx)
 }

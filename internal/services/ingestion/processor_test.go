@@ -14,10 +14,20 @@ import (
 	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"google.golang.org/protobuf/proto"
 )
 
 type MockStream struct {
 	mock.Mock
+}
+
+type MockMetricsStream struct {
+	mock.Mock
+}
+
+func (m *MockMetricsStream) Send(req *streamv1.IngestMetricsRequest) error {
+	args := m.Called(req)
+	return args.Error(0)
 }
 
 func (m *MockStream) Send(req *streamv1.IngestSensorRequest) error {
@@ -103,4 +113,34 @@ func TestForwardEvent_Errors(t *testing.T) {
 
 		mockS.AssertExpectations(t)
 	})
+}
+
+func TestReportQueueStatusForwardsMetrics(t *testing.T) {
+	metricsStream := new(MockMetricsStream)
+	p := &Processor{
+		eventQueue: make(chan domain.Sensor, 4),
+		M:          metricsStream,
+		processed:  9,
+		dropped:    2,
+	}
+	p.eventQueue <- domain.Sensor{}
+	p.eventQueue <- domain.Sensor{}
+
+	metricsStream.On("Send", &streamv1.IngestMetricsRequest{
+		Queue: &streamv1.QueueMetrics{
+			Processed:   proto.Uint64(9),
+			Dropped:     proto.Uint64(2),
+			Used:        proto.Uint32(2),
+			Capacity:    proto.Uint32(4),
+			MaxUsed:     proto.Uint32(0),
+			Utilization: proto.Float64(50),
+		},
+		Throughput: &streamv1.ThroughputMetrics{IngestionRate: proto.Float64(1)},
+		Grpc:       &streamv1.ConnectionMetrics{Connected: proto.Bool(false), Errors: proto.Uint32(0)},
+		Broker:     &streamv1.ConnectionMetrics{Connected: proto.Bool(false)},
+	}).Return(nil).Once()
+
+	processed := p.reportQueueStatus(4, 5*time.Second)
+	assert.Equal(t, uint64(9), processed)
+	metricsStream.AssertExpectations(t)
 }

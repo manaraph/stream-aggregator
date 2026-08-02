@@ -40,4 +40,27 @@ func TestNewProcessor_Config(t *testing.T) {
 		assert.Nil(t, p)
 		assert.Error(t, err, "Should fail because MQTT broker is unreachable")
 	})
+
+	t.Run("Missing MQTT Broker", func(t *testing.T) {
+		os.Setenv("INGESTION_ID", "test-id")
+		os.Setenv("GATEWAY_ADDR", "127.0.0.1:50051")
+		os.Unsetenv("MQTT_BROKER")
+		defer os.Clearenv()
+
+		p, err := NewProcessor()
+		assert.Nil(t, p)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "MQTT_BROKER")
+	})
+
+	t.Run("Gateway Address Still Fails Fast", func(t *testing.T) {
+		os.Setenv("INGESTION_ID", "test-id")
+		os.Setenv("GATEWAY_ADDR", "127.0.0.1:65535")
+		os.Setenv("MQTT_BROKER", "tcp://127.0.0.1:1883")
+		defer os.Clearenv()
+
+		p, err := NewProcessor()
+		assert.Nil(t, p)
+		assert.Error(t, err)
+	})
 }

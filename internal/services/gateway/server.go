@@ -3,11 +3,14 @@ package gateway
 import (
 	"net"
 	"net/http"
+	"runtime"
+	"time"
 
 	"github.com/manaraph/stream-aggregator/pkg/grpcapi"
 	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 	"github.com/manaraph/stream-aggregator/pkg/ws"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/proto"
 )
 
 type Gateway struct {
@@ -25,13 +28,15 @@ func NewGateway(grpcAddr, httpAddr string) (*Gateway, error) {
 	}
 
 	grpcServer := grpc.NewServer()
-	streamv1.RegisterSensorServiceServer(grpcServer, &grpcapi.Server{Hub: hub})
+	dispatcher := grpcapi.NewWebSocketDispatcher(hub)
+	grpcapi.RegisterServices(grpcServer, dispatcher)
 
 	go hub.Run()
 	go grpcServer.Serve(lis)
+	go publishMetrics(hub, dispatcher)
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/ws", hub.Handler)
+	hub.RegisterRoute(mux)
 	mux.HandleFunc("/health", func(w http.ResponseWriter, _ *http.Request) {
 		w.Write([]byte("ok"))
 	})
@@ -40,4 +45,37 @@ func NewGateway(grpcAddr, httpAddr string) (*Gateway, error) {
 	go httpServer.ListenAndServe()
 
 	return &Gateway{Hub: hub, GrpcServer: grpcServer, HttpServer: httpServer}, nil
+}
+
+func publishMetrics(hub *ws.Hub, dispatcher grpcapi.Dispatcher) {
+	startedAt := time.Now()
+	ticker := time.NewTicker(5 * time.Second)
+	defer ticker.Stop()
+	publishMetricsWithTicker(hub, dispatcher, ticker.C, startedAt)
+}
+
+func publishMetricsWithTicker(hub *ws.Hub, dispatcher grpcapi.Dispatcher, tick <-chan time.Time, startedAt time.Time) {
+	var previousDelivered uint64
+
+	for range tick {
+		stats := hub.Stats()
+		delivered := stats.Delivered
+		dispatcher.PublishMetrics(&streamv1.IngestMetricsRequest{
+			Throughput: &streamv1.ThroughputMetrics{WebsocketRate: proto.Float64(float64(delivered-previousDelivered) / 5)},
+			Runtime: &streamv1.RuntimeMetrics{
+				UptimeSeconds:     proto.Uint64(uint64(time.Since(startedAt).Seconds())),
+				Goroutines:        proto.Uint32(uint32(runtime.NumGoroutine())),
+				MemoryBytes:       proto.Uint64(allocatedMemory()),
+				WebsocketClients:  proto.Uint32(stats.Clients),
+				BackpressureLevel: proto.Uint32(stats.BackpressureLevel),
+			},
+		})
+		previousDelivered = delivered
+	}
+}
+
+func allocatedMemory() uint64 {
+	var memory runtime.MemStats
+	runtime.ReadMemStats(&memory)
+	return memory.Alloc
 }

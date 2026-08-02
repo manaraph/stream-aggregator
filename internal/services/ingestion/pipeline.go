@@ -1,6 +1,7 @@
 package ingestion
 
 import (
+	"context"
 	"log"
 	"os"
 	"strconv"
@@ -8,6 +9,8 @@ import (
 	"time"
 
 	"github.com/manaraph/stream-aggregator/internal/domain"
+	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
+	"google.golang.org/protobuf/proto"
 )
 
 func (p *Processor) initPipeline() {
@@ -26,6 +29,9 @@ func (p *Processor) initPipeline() {
 	}
 
 	p.eventQueue = make(chan domain.Sensor, queueSize)
+	if p.ctx == nil {
+		p.ctx = context.Background()
+	}
 
 	log.Printf("Starting ingestion pipeline: workers=%d queue=%d", workerCount, queueSize)
 
@@ -45,12 +51,13 @@ func (p *Processor) worker(id int) {
 	}
 }
 
-func (p *Processor) EnqueueEvent(e domain.Sensor) {
+func (p *Processor) enqueueEvent(e domain.Sensor) {
 	p.WG.Add(1)
 
 	select {
 	case p.eventQueue <- e:
 		atomic.AddUint64(&p.processed, 1)
+		p.recordQueueHighWaterMark(uint32(len(p.eventQueue)))
 	default:
 		log.Println("WARNING: ingestion queue full, dropping event")
 		atomic.AddUint64(&p.dropped, 1)
@@ -58,20 +65,54 @@ func (p *Processor) EnqueueEvent(e domain.Sensor) {
 	}
 }
 
+func (p *Processor) recordQueueHighWaterMark(used uint32) {
+	for {
+		maxUsed := atomic.LoadUint32(&p.maxUsed)
+		if used <= maxUsed || atomic.CompareAndSwapUint32(&p.maxUsed, maxUsed, used) {
+			return
+		}
+	}
+}
+
 func (p *Processor) queueStatus() {
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
-	for range ticker.C {
-		used := len(p.eventQueue)
-		capacity := cap(p.eventQueue)
-		percent := float64(used) / float64(capacity) * 100
-
-		log.Printf("QUEUE %d/%d (%.1f%%) processed=%d dropped=%d",
-			used,
-			capacity,
-			percent,
-			atomic.LoadUint64(&p.processed),
-			atomic.LoadUint64(&p.dropped),
-		)
+	var previousProcessed uint64
+	for {
+		select {
+		case <-p.ctx.Done():
+			return
+		case <-ticker.C:
+			previousProcessed = p.reportQueueStatus(previousProcessed, 5*time.Second)
+		}
 	}
+}
+
+func (p *Processor) reportQueueStatus(previousProcessed uint64, interval time.Duration) uint64 {
+	used := len(p.eventQueue)
+	capacity := cap(p.eventQueue)
+	percent := 0.0
+	if capacity > 0 {
+		percent = float64(used) / float64(capacity) * 100
+	}
+
+	processed := atomic.LoadUint64(&p.processed)
+	dropped := atomic.LoadUint64(&p.dropped)
+	rate := float64(processed-previousProcessed) / interval.Seconds()
+
+	p.ForwardMetrics(&streamv1.IngestMetricsRequest{
+		Queue: &streamv1.QueueMetrics{
+			Processed:   proto.Uint64(processed),
+			Dropped:     proto.Uint64(dropped),
+			Used:        proto.Uint32(uint32(used)),
+			Capacity:    proto.Uint32(uint32(capacity)),
+			MaxUsed:     proto.Uint32(atomic.LoadUint32(&p.maxUsed)),
+			Utilization: proto.Float64(percent),
+		},
+		Throughput: &streamv1.ThroughputMetrics{IngestionRate: proto.Float64(rate)},
+		Grpc:       &streamv1.ConnectionMetrics{Connected: proto.Bool(p.S != nil && p.M != nil), Errors: proto.Uint32(atomic.LoadUint32(&p.grpcErrors))},
+		Broker:     &streamv1.ConnectionMetrics{Connected: proto.Bool(p.B != nil)},
+	})
+
+	return processed
 }

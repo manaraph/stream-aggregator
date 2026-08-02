@@ -5,6 +5,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/manaraph/stream-aggregator/internal/domain"
 	"github.com/manaraph/stream-aggregator/pkg/broker"
@@ -26,7 +27,7 @@ func TestProcessor_Flow(t *testing.T) {
 	p.initPipeline()
 
 	event := domain.Sensor{Sensor: "test-sensor", Value: 10.5}
-	p.EnqueueEvent(event)
+	p.enqueueEvent(event)
 
 	p.WG.Wait()
 
@@ -41,11 +42,20 @@ func TestProcessor_QueueFull(t *testing.T) {
 
 	e := domain.Sensor{Sensor: "s1"}
 
-	p.EnqueueEvent(e)
+	p.enqueueEvent(e)
 	assert.Equal(t, uint64(1), atomic.LoadUint64(&p.processed))
 
-	p.EnqueueEvent(e)
+	p.enqueueEvent(e)
 	assert.Equal(t, uint64(1), atomic.LoadUint64(&p.dropped))
+}
+
+func TestProcessor_TracksQueueHighWaterMark(t *testing.T) {
+	p := &Processor{eventQueue: make(chan domain.Sensor, 2)}
+
+	p.enqueueEvent(domain.Sensor{Sensor: "s1"})
+	p.enqueueEvent(domain.Sensor{Sensor: "s2"})
+
+	assert.Equal(t, uint32(2), atomic.LoadUint32(&p.maxUsed))
 }
 
 func TestProcessor_InitPipelineConfig(t *testing.T) {
@@ -56,4 +66,35 @@ func TestProcessor_InitPipelineConfig(t *testing.T) {
 	p.initPipeline()
 
 	assert.Equal(t, 555, cap(p.eventQueue))
+}
+
+func TestProcessor_ReportQueueStatusIncludesMetrics(t *testing.T) {
+	metricsStream := new(MockMetricsStream)
+	p := &Processor{
+		eventQueue: make(chan domain.Sensor, 2),
+		M:          metricsStream,
+	}
+
+	metricsStream.On("Send", mock.Anything).Return(nil).Once()
+	p.processed = 3
+	p.dropped = 1
+	p.maxUsed = 2
+	p.grpcErrors = 4
+	p.B = broker.NewFakeBroker()
+	p.S = new(MockStream)
+
+	previous := p.reportQueueStatus(1, 5*time.Second)
+
+	assert.Equal(t, uint64(3), previous)
+	metricsStream.AssertExpectations(t)
+}
+
+func TestProcessor_ReportQueueStatusHandlesEmptyCapacity(t *testing.T) {
+	p := &Processor{eventQueue: make(chan domain.Sensor)}
+	p.processed = 5
+	p.dropped = 2
+	p.maxUsed = 1
+
+	previous := p.reportQueueStatus(0, 5*time.Second)
+	assert.Equal(t, uint64(5), previous)
 }

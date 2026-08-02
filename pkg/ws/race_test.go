@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"fmt"
 	"sync"
 	"testing"
 )
@@ -24,7 +25,7 @@ func TestHubRaceStress(t *testing.T) {
 			h.register <- c
 
 			for j := 0; j < 100; j++ {
-				h.BroadcastEvent(map[string]int{"n": j})
+				h.Broadcast([]byte(fmt.Sprintf(`{"n": %d}`, j)))
 			}
 
 			h.unregister <- c
@@ -43,6 +44,6 @@ func BenchmarkHubBroadcast(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		h.BroadcastEvent(map[string]int{"n": i})
+		h.Broadcast([]byte(fmt.Sprintf(`{"n": %d}`, i)))
 	}
 }

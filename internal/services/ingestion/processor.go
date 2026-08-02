@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"sync"
+	"sync/atomic"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/manaraph/stream-aggregator/internal/domain"
@@ -15,24 +16,31 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-type StreamClient interface {
+type SensorStreamClient interface {
 	Send(*streamv1.IngestSensorRequest) error
+}
+
+type MetricsStreamClient interface {
+	Send(*streamv1.IngestMetricsRequest) error
 }
 
 type Processor struct {
 	B          broker.Broker
 	GRPC       *grpc.ClientConn
-	S          StreamClient
+	S          SensorStreamClient
+	M          MetricsStreamClient
 	eventQueue chan domain.Sensor
 	processed  uint64
 	dropped    uint64
+	maxUsed    uint32
+	grpcErrors uint32
 	WG         sync.WaitGroup
 	cancel     context.CancelFunc
+	ctx        context.Context
 }
 
 func (p *Processor) Run(ctx context.Context) error {
-	_, cancel := context.WithCancel(ctx)
-	p.cancel = cancel
+	p.ctx, p.cancel = context.WithCancel(ctx)
 
 	p.initPipeline()
 	return p.B.Subscribe("sensors/#", p.HandleMessage)
@@ -44,7 +52,7 @@ func (p *Processor) HandleMessage(c mqtt.Client, m mqtt.Message) {
 		log.Println("Invalid event:", err)
 		return
 	}
-	p.EnqueueEvent(e)
+	p.enqueueEvent(e)
 }
 
 func (p *Processor) ForwardEvent(data domain.Sensor) {
@@ -61,6 +69,17 @@ func (p *Processor) ForwardEvent(data domain.Sensor) {
 
 	if err != nil {
 		log.Println("gRPC send failed:", err)
+		atomic.AddUint32(&p.grpcErrors, 1)
+	}
+}
+
+func (p *Processor) ForwardMetrics(metrics *streamv1.IngestMetricsRequest) {
+	if p.M == nil {
+		return
+	}
+	if err := p.M.Send(metrics); err != nil {
+		log.Println("gRPC metrics send failed:", err)
+		atomic.AddUint32(&p.grpcErrors, 1)
 	}
 }
 

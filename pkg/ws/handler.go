@@ -15,7 +15,11 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func (h *Hub) Handler(w http.ResponseWriter, r *http.Request) {
+func (h *Hub) RegisterRoute(mux *http.ServeMux) {
+	mux.HandleFunc("/ws", h.handler)
+}
+
+func (h *Hub) handler(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println("ws upgrade failed:", err)

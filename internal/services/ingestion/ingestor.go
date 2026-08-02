@@ -8,6 +8,7 @@ import (
 
 	"github.com/manaraph/stream-aggregator/pkg/broker"
 	"github.com/manaraph/stream-aggregator/pkg/grpcapi"
+	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 )
 
 func NewProcessor() (*Processor, error) {
@@ -16,26 +17,31 @@ func NewProcessor() (*Processor, error) {
 		return nil, errors.New("INGESTION_ID not defined")
 	}
 
-	addr := os.Getenv("GATEWAY_ADDR")
-	if addr == "" {
-		return nil, errors.New("GATEWAY_ADDR not defined")
-	}
-
-	mclient, err := broker.NewMQTTClient(clientId)
+	client, conn, err := grpcapi.ConnectGateway()
 	if err != nil {
 		return nil, err
 	}
 
-	client, conn, err := grpcapi.NewClient(addr)
+	mclient, err := broker.NewMQTTClient(clientId)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to connect to gRPC gateway: %w", err)
-
+		_ = conn.Close()
+		return nil, err
 	}
 
-	stream, err := client.IngestSensor(context.Background())
+	ctx := context.Background()
+	stream, err := client.IngestSensor(ctx)
 	if err != nil {
+		_ = mclient.Close()
+		_ = conn.Close()
 		return nil, fmt.Errorf("Failed to open gRPC stream: %w", err)
 	}
 
-	return &Processor{B: mclient, GRPC: conn, S: stream}, nil
+	metricsStream, err := streamv1.NewMetricsServiceClient(conn).IngestMetrics(ctx)
+	if err != nil {
+		_ = mclient.Close()
+		_ = conn.Close()
+		return nil, fmt.Errorf("Failed to open metrics stream: %w", err)
+	}
+
+	return &Processor{B: mclient, GRPC: conn, S: stream, M: metricsStream}, nil
 }

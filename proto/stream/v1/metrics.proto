@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package stream.v1;
+
+option go_package = "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1;streamv1";
+
+service MetricsService {
+  rpc IngestMetrics(stream IngestMetricsRequest) returns (IngestMetricsResponse);
+}
+
+message QueueMetrics {
+  optional uint64 processed = 1;
+  optional uint64 dropped = 2;
+  optional uint32 used = 3;
+  optional uint32 capacity = 4;
+  optional uint32 max_used = 5;
+  optional double utilization = 6;
+}
+
+message ThroughputMetrics {
+  optional double publish_rate = 1;
+  optional double ingestion_rate = 2;
+  optional double grpc_rate = 3;
+  optional double websocket_rate = 4;
+}
+
+message LatencyMetrics {
+  optional uint32 average_ms = 1;
+  optional uint32 p95_ms = 2;
+  optional uint32 max_ms = 3;
+}
+
+message ConnectionMetrics {
+  optional bool connected = 1;
+  optional uint32 reconnects = 2;
+  optional uint32 errors = 3;
+}
+
+message RuntimeMetrics {
+  optional uint64 uptime_seconds = 1;
+  optional uint32 goroutines = 2;
+  optional uint64 memory_bytes = 3;
+  optional uint32 websocket_clients = 4;
+  optional uint32 backpressure_level = 5;
+}
+
+message IngestMetricsRequest {
+  QueueMetrics queue = 1;
+  ThroughputMetrics throughput = 2;
+  LatencyMetrics latency = 3;
+  ConnectionMetrics grpc = 4;
+  ConnectionMetrics broker = 5;
+  RuntimeMetrics runtime = 6;
+}
+
+message IngestMetricsResponse {}
