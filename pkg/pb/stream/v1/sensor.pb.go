@@ -134,126 +134,6 @@ func (x *IngestSensorResponse) GetMessage() string {
 	return ""
 }
 
-type StreamMetricsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Processed     uint64                 `protobuf:"varint,1,opt,name=processed,proto3" json:"processed,omitempty"`
-	Dropped       uint64                 `protobuf:"varint,2,opt,name=dropped,proto3" json:"dropped,omitempty"`
-	QueueUsed     uint32                 `protobuf:"varint,3,opt,name=queue_used,json=queueUsed,proto3" json:"queue_used,omitempty"`
-	QueueCapacity uint32                 `protobuf:"varint,4,opt,name=queue_capacity,json=queueCapacity,proto3" json:"queue_capacity,omitempty"`
-	QueuePercent  float64                `protobuf:"fixed64,5,opt,name=queue_percent,json=queuePercent,proto3" json:"queue_percent,omitempty"`
-	Rate          float64                `protobuf:"fixed64,6,opt,name=rate,proto3" json:"rate,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *StreamMetricsRequest) Reset() {
-	*x = StreamMetricsRequest{}
-	mi := &file_stream_v1_sensor_proto_msgTypes[2]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *StreamMetricsRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*StreamMetricsRequest) ProtoMessage() {}
-
-func (x *StreamMetricsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stream_v1_sensor_proto_msgTypes[2]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use StreamMetricsRequest.ProtoReflect.Descriptor instead.
-func (*StreamMetricsRequest) Descriptor() ([]byte, []int) {
-	return file_stream_v1_sensor_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *StreamMetricsRequest) GetProcessed() uint64 {
-	if x != nil {
-		return x.Processed
-	}
-	return 0
-}
-
-func (x *StreamMetricsRequest) GetDropped() uint64 {
-	if x != nil {
-		return x.Dropped
-	}
-	return 0
-}
-
-func (x *StreamMetricsRequest) GetQueueUsed() uint32 {
-	if x != nil {
-		return x.QueueUsed
-	}
-	return 0
-}
-
-func (x *StreamMetricsRequest) GetQueueCapacity() uint32 {
-	if x != nil {
-		return x.QueueCapacity
-	}
-	return 0
-}
-
-func (x *StreamMetricsRequest) GetQueuePercent() float64 {
-	if x != nil {
-		return x.QueuePercent
-	}
-	return 0
-}
-
-func (x *StreamMetricsRequest) GetRate() float64 {
-	if x != nil {
-		return x.Rate
-	}
-	return 0
-}
-
-type StreamMetricsResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *StreamMetricsResponse) Reset() {
-	*x = StreamMetricsResponse{}
-	mi := &file_stream_v1_sensor_proto_msgTypes[3]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *StreamMetricsResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*StreamMetricsResponse) ProtoMessage() {}
-
-func (x *StreamMetricsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stream_v1_sensor_proto_msgTypes[3]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use StreamMetricsResponse.ProtoReflect.Descriptor instead.
-func (*StreamMetricsResponse) Descriptor() ([]byte, []int) {
-	return file_stream_v1_sensor_proto_rawDescGZIP(), []int{3}
-}
-
 var File_stream_v1_sensor_proto protoreflect.FileDescriptor
 
 const file_stream_v1_sensor_proto_rawDesc = "" +
@@ -265,19 +145,9 @@ const file_stream_v1_sensor_proto_rawDesc = "" +
 	"\ttimestamp\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\ttimestamp\"J\n" +
 	"\x14IngestSensorResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage\"\xcd\x01\n" +
-	"\x14StreamMetricsRequest\x12\x1c\n" +
-	"\tprocessed\x18\x01 \x01(\x04R\tprocessed\x12\x18\n" +
-	"\adropped\x18\x02 \x01(\x04R\adropped\x12\x1d\n" +
-	"\n" +
-	"queue_used\x18\x03 \x01(\rR\tqueueUsed\x12%\n" +
-	"\x0equeue_capacity\x18\x04 \x01(\rR\rqueueCapacity\x12#\n" +
-	"\rqueue_percent\x18\x05 \x01(\x01R\fqueuePercent\x12\x12\n" +
-	"\x04rate\x18\x06 \x01(\x01R\x04rate\"\x17\n" +
-	"\x15StreamMetricsResponse2\xb8\x01\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage2b\n" +
 	"\rSensorService\x12Q\n" +
-	"\fIngestSensor\x12\x1e.stream.v1.IngestSensorRequest\x1a\x1f.stream.v1.IngestSensorResponse(\x01\x12T\n" +
-	"\rStreamMetrics\x12\x1f.stream.v1.StreamMetricsRequest\x1a .stream.v1.StreamMetricsResponse(\x01BAZ?github.com/manaraph/stream-aggregator/pkg/pb/stream/v1;streamv1b\x06proto3"
+	"\fIngestSensor\x12\x1e.stream.v1.IngestSensorRequest\x1a\x1f.stream.v1.IngestSensorResponse(\x01BAZ?github.com/manaraph/stream-aggregator/pkg/pb/stream/v1;streamv1b\x06proto3"
 
 var (
 	file_stream_v1_sensor_proto_rawDescOnce sync.Once
@@ -291,22 +161,18 @@ func file_stream_v1_sensor_proto_rawDescGZIP() []byte {
 	return file_stream_v1_sensor_proto_rawDescData
 }
 
-var file_stream_v1_sensor_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_stream_v1_sensor_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_stream_v1_sensor_proto_goTypes = []any{
 	(*IngestSensorRequest)(nil),   // 0: stream.v1.IngestSensorRequest
 	(*IngestSensorResponse)(nil),  // 1: stream.v1.IngestSensorResponse
-	(*StreamMetricsRequest)(nil),  // 2: stream.v1.StreamMetricsRequest
-	(*StreamMetricsResponse)(nil), // 3: stream.v1.StreamMetricsResponse
-	(*timestamppb.Timestamp)(nil), // 4: google.protobuf.Timestamp
+	(*timestamppb.Timestamp)(nil), // 2: google.protobuf.Timestamp
 }
 var file_stream_v1_sensor_proto_depIdxs = []int32{
-	4, // 0: stream.v1.IngestSensorRequest.timestamp:type_name -> google.protobuf.Timestamp
+	2, // 0: stream.v1.IngestSensorRequest.timestamp:type_name -> google.protobuf.Timestamp
 	0, // 1: stream.v1.SensorService.IngestSensor:input_type -> stream.v1.IngestSensorRequest
-	2, // 2: stream.v1.SensorService.StreamMetrics:input_type -> stream.v1.StreamMetricsRequest
-	1, // 3: stream.v1.SensorService.IngestSensor:output_type -> stream.v1.IngestSensorResponse
-	3, // 4: stream.v1.SensorService.StreamMetrics:output_type -> stream.v1.StreamMetricsResponse
-	3, // [3:5] is the sub-list for method output_type
-	1, // [1:3] is the sub-list for method input_type
+	1, // 2: stream.v1.SensorService.IngestSensor:output_type -> stream.v1.IngestSensorResponse
+	2, // [2:3] is the sub-list for method output_type
+	1, // [1:2] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
 	1, // [1:1] is the sub-list for extension extendee
 	0, // [0:1] is the sub-list for field type_name
@@ -323,7 +189,7 @@ func file_stream_v1_sensor_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stream_v1_sensor_proto_rawDesc), len(file_stream_v1_sensor_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

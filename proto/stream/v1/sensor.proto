@@ -8,7 +8,6 @@ option go_package = "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1;stre
 
 service SensorService {
   rpc IngestSensor(stream IngestSensorRequest) returns (IngestSensorResponse);
-  rpc StreamMetrics(stream StreamMetricsRequest) returns (StreamMetricsResponse);
 }
 
 message IngestSensorRequest {
@@ -21,14 +20,3 @@ message IngestSensorResponse {
   bool success = 1;
   string message = 2;
 }
-
-message StreamMetricsRequest {
-  uint64 processed = 1;
-  uint64 dropped = 2;
-  uint32 queue_used = 3;
-  uint32 queue_capacity = 4;
-  double queue_percent = 5;
-  double rate = 6;
-}
-
-message StreamMetricsResponse {}

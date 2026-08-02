@@ -19,8 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	SensorService_IngestSensor_FullMethodName  = "/stream.v1.SensorService/IngestSensor"
-	SensorService_StreamMetrics_FullMethodName = "/stream.v1.SensorService/StreamMetrics"
+	SensorService_IngestSensor_FullMethodName = "/stream.v1.SensorService/IngestSensor"
 )
 
 // SensorServiceClient is the client API for SensorService service.
@@ -28,7 +27,6 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SensorServiceClient interface {
 	IngestSensor(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[IngestSensorRequest, IngestSensorResponse], error)
-	StreamMetrics(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[StreamMetricsRequest, StreamMetricsResponse], error)
 }
 
 type sensorServiceClient struct {
@@ -52,25 +50,11 @@ func (c *sensorServiceClient) IngestSensor(ctx context.Context, opts ...grpc.Cal
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type SensorService_IngestSensorClient = grpc.ClientStreamingClient[IngestSensorRequest, IngestSensorResponse]
 
-func (c *sensorServiceClient) StreamMetrics(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[StreamMetricsRequest, StreamMetricsResponse], error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &SensorService_ServiceDesc.Streams[1], SensorService_StreamMetrics_FullMethodName, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &grpc.GenericClientStream[StreamMetricsRequest, StreamMetricsResponse]{ClientStream: stream}
-	return x, nil
-}
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type SensorService_StreamMetricsClient = grpc.ClientStreamingClient[StreamMetricsRequest, StreamMetricsResponse]
-
 // SensorServiceServer is the server API for SensorService service.
 // All implementations must embed UnimplementedSensorServiceServer
 // for forward compatibility.
 type SensorServiceServer interface {
 	IngestSensor(grpc.ClientStreamingServer[IngestSensorRequest, IngestSensorResponse]) error
-	StreamMetrics(grpc.ClientStreamingServer[StreamMetricsRequest, StreamMetricsResponse]) error
 	mustEmbedUnimplementedSensorServiceServer()
 }
 
@@ -83,9 +67,6 @@ type UnimplementedSensorServiceServer struct{}
 
 func (UnimplementedSensorServiceServer) IngestSensor(grpc.ClientStreamingServer[IngestSensorRequest, IngestSensorResponse]) error {
 	return status.Error(codes.Unimplemented, "method IngestSensor not implemented")
-}
-func (UnimplementedSensorServiceServer) StreamMetrics(grpc.ClientStreamingServer[StreamMetricsRequest, StreamMetricsResponse]) error {
-	return status.Error(codes.Unimplemented, "method StreamMetrics not implemented")
 }
 func (UnimplementedSensorServiceServer) mustEmbedUnimplementedSensorServiceServer() {}
 func (UnimplementedSensorServiceServer) testEmbeddedByValue()                       {}
@@ -115,13 +96,6 @@ func _SensorService_IngestSensor_Handler(srv interface{}, stream grpc.ServerStre
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type SensorService_IngestSensorServer = grpc.ClientStreamingServer[IngestSensorRequest, IngestSensorResponse]
 
-func _SensorService_StreamMetrics_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(SensorServiceServer).StreamMetrics(&grpc.GenericServerStream[StreamMetricsRequest, StreamMetricsResponse]{ServerStream: stream})
-}
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type SensorService_StreamMetricsServer = grpc.ClientStreamingServer[StreamMetricsRequest, StreamMetricsResponse]
-
 // SensorService_ServiceDesc is the grpc.ServiceDesc for SensorService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -133,11 +107,6 @@ var SensorService_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "IngestSensor",
 			Handler:       _SensorService_IngestSensor_Handler,
-			ClientStreams: true,
-		},
-		{
-			StreamName:    "StreamMetrics",
-			Handler:       _SensorService_StreamMetrics_Handler,
 			ClientStreams: true,
 		},
 	},
