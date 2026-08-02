@@ -42,12 +42,14 @@ services:
     container_name: generator-service
     depends_on:
       - mosquitto
-    networks:
-      - app-network
+      - gateway
     environment:
       - MQTT_BROKER
       - GENERATOR_ID
       - PUBLISH_RATE
+      - GATEWAY_ADDR
+    networks:
+      - app-network
 
   ingestion:
     build:

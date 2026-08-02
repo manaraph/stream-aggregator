@@ -121,22 +121,16 @@ func NewPublisher() (*Publisher, error) {
 		return nil, err
 	}
 
-	addr := os.Getenv("GATEWAY_ADDR")
-	if addr == "" {
-		_ = mclient.Close()
-		return nil, errors.New("GATEWAY_ADDR not defined")
-	}
-
-	_, conn, err := grpcapi.NewClient(addr)
+	_, conn, err := grpcapi.ConnectGateway()
 	if err != nil {
-		_ = mclient.Close()
-		return nil, err
+		log.Printf("metrics client unavailable: %v", err)
+		return &Publisher{B: mclient}, nil
 	}
 	metricsStream, err := streamv1.NewMetricsServiceClient(conn).IngestMetrics(context.Background())
 	if err != nil {
-		_ = mclient.Close()
 		_ = conn.Close()
-		return nil, err
+		log.Printf("metrics stream unavailable: %v", err)
+		return &Publisher{B: mclient}, nil
 	}
 
 	return &Publisher{B: mclient, GRPC: conn, M: metricsStream}, nil

@@ -17,20 +17,14 @@ func NewProcessor() (*Processor, error) {
 		return nil, errors.New("INGESTION_ID not defined")
 	}
 
-	addr := os.Getenv("GATEWAY_ADDR")
-	if addr == "" {
-		return nil, errors.New("GATEWAY_ADDR not defined")
-	}
-
 	mclient, err := broker.NewMQTTClient(clientId)
 	if err != nil {
 		return nil, err
 	}
 
-	client, conn, err := grpcapi.NewClient(addr)
+	client, conn, err := grpcapi.ConnectGateway()
 	if err != nil {
 		return nil, fmt.Errorf("Failed to connect to gRPC gateway: %w", err)
-
 	}
 
 	ctx := context.Background()
