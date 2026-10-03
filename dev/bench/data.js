@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1785712239712,
+  "lastUpdate": 1791033685719,
   "repoUrl": "https://github.com/manaraph/stream-aggregator",
   "entries": {
     "Benchmark": [
@@ -376,6 +376,50 @@ window.BENCHMARK_DATA = {
             "value": 3,
             "unit": "allocs/op",
             "extra": "4660755 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "manaraph",
+            "username": "manaraph"
+          },
+          "committer": {
+            "name": "manaraph",
+            "username": "manaraph"
+          },
+          "id": "227cfec3792b5d73d044ac40d259ce33d37f9708",
+          "message": "Fix build pipeline - update pipeline go-version",
+          "timestamp": "2026-08-02T23:14:53Z",
+          "url": "https://github.com/manaraph/stream-aggregator/pull/9/commits/227cfec3792b5d73d044ac40d259ce33d37f9708"
+        },
+        "date": 1791033685268,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkHubBroadcast",
+            "value": 224.4,
+            "unit": "ns/op\t      40 B/op\t       3 allocs/op",
+            "extra": "5178909 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - ns/op",
+            "value": 224.4,
+            "unit": "ns/op",
+            "extra": "5178909 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - B/op",
+            "value": 40,
+            "unit": "B/op",
+            "extra": "5178909 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - allocs/op",
+            "value": 3,
+            "unit": "allocs/op",
+            "extra": "5178909 times\n4 procs"
           }
         ]
       }
