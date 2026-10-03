@@ -4,12 +4,17 @@ import "sync/atomic"
 
 type Hub struct {
 	clients     map[*Client]struct{}
-	register    chan *Client
+	register    chan registration
 	unregister  chan *Client
 	events      chan []byte
 	clientCount uint32
 	dropped     uint64
 	delivered   uint64
+}
+
+type registration struct {
+	client     *Client
+	registered chan struct{}
 }
 
 type Broadcaster interface {
@@ -25,10 +30,16 @@ type Stats struct {
 func NewHub() *Hub {
 	return &Hub{
 		clients:    make(map[*Client]struct{}),
-		register:   make(chan *Client),
+		register:   make(chan registration),
 		unregister: make(chan *Client),
 		events:     make(chan []byte, 1024),
 	}
+}
+
+func (h *Hub) registerClient(c *Client) {
+	registered := make(chan struct{})
+	h.register <- registration{client: c, registered: registered}
+	<-registered
 }
 
 func (h *Hub) Broadcast(msg []byte) {
@@ -50,9 +61,10 @@ func (h *Hub) Stats() Stats {
 func (h *Hub) Run() {
 	for {
 		select {
-		case c := <-h.register:
-			h.clients[c] = struct{}{}
+		case request := <-h.register:
+			h.clients[request.client] = struct{}{}
 			atomic.StoreUint32(&h.clientCount, uint32(len(h.clients)))
+			close(request.registered)
 
 		case c := <-h.unregister:
 			if _, ok := h.clients[c]; ok {

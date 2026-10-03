@@ -17,8 +17,7 @@ func TestHubRegisterBroadcastUnregister(t *testing.T) {
 		send: make(chan []byte, 10),
 	}
 
-	h.register <- c
-	time.Sleep(10 * time.Millisecond)
+	h.registerClient(c)
 
 	h.Broadcast([]byte(`{"msg": "hello"}`))
 
@@ -71,7 +70,7 @@ func TestHubRemovesSlowClientOnBroadcastFailure(t *testing.T) {
 
 	client := &Client{hub: h, send: make(chan []byte, 1)}
 	client.send <- []byte("one")
-	h.register <- client
+	h.registerClient(client)
 
 	assert.Eventually(t, func() bool {
 		return h.Stats().Clients == 1
