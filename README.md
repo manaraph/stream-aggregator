@@ -97,13 +97,15 @@ Regenerate mocks after changing a configured interface. Lightweight fakes remain
 make integration-test
 ```
 
-This runs the storage integration test only when `TEST_DATABASE_URL` is set in the environment or `.env`; otherwise Make reports that it skipped the test. For a local Compose database, start PostgreSQL with `docker compose up -d postgres` and set `TEST_DATABASE_URL` to its host URL (usually `localhost:5432`). The test removes its uniquely prefixed rows when it finishes.
+This runs the storage integration test only when `TEST_DATABASE_URL` is set in the environment or `.env`; otherwise Make reports that it skipped the test. For a local Compose database, start PostgreSQL with `docker compose up -d postgres` and use the host URL (`localhost:5432`) in `TEST_DATABASE_URL`. Compose creates the test database on first initialization. If you already have a PostgreSQL volume, create it once with `docker compose exec postgres createdb -U stream_aggregator -O stream_aggregator stream_aggregator_test`. The test removes its uniquely prefixed rows when it finishes.
 
 ### Run tests and show coverage
 
 ```
 make coverage
 ```
+
+The unit coverage report follows the CI gate and excludes `internal/storage`, which is covered separately by the optional PostgreSQL integration test above.
 
 ### Run tests and open coverage in the browser
 

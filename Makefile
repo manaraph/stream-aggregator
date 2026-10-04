@@ -1,5 +1,6 @@
 # Patterns to ignore
-IGNORE_PKGS := /cmd|/proto|/pb
+# Match the CI unit coverage gate; storage coverage comes from optional PostgreSQL integration tests.
+IGNORE_PKGS := /cmd|/proto|/pb|/internal/storage
 IGNORE_FILES := \.pb\.go|mock_.*\.go|/proto/|/pb/|/cmd/
 
 ## help: Show available commands

@@ -1,0 +1,1 @@
+CREATE DATABASE stream_aggregator_test;
