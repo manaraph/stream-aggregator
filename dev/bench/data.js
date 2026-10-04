@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791109155737,
+  "lastUpdate": 1791109402742,
   "repoUrl": "https://github.com/manaraph/stream-aggregator",
   "entries": {
     "Benchmark": [
@@ -464,6 +464,54 @@ window.BENCHMARK_DATA = {
             "value": 3,
             "unit": "allocs/op",
             "extra": "4718271 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "manaraph225@gmail.com",
+            "name": "Manasseh Omachonu",
+            "username": "manaraph"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2def38ae7c7c32e868c96026fe69ec0609264e02",
+          "message": "Merge pull request #10 from manaraph/ft-save-sensor-data\n\nSave raw sensor data to persistent PostgreSQL storage with configurable batch writes",
+          "timestamp": "2026-10-04T12:21:57+02:00",
+          "tree_id": "15232651e2ff491b8413645c4cdca7b331f8f9ae",
+          "url": "https://github.com/manaraph/stream-aggregator/commit/2def38ae7c7c32e868c96026fe69ec0609264e02"
+        },
+        "date": 1791109402202,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkHubBroadcast",
+            "value": 300,
+            "unit": "ns/op\t      40 B/op\t       2 allocs/op",
+            "extra": "3728059 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - ns/op",
+            "value": 300,
+            "unit": "ns/op",
+            "extra": "3728059 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - B/op",
+            "value": 40,
+            "unit": "B/op",
+            "extra": "3728059 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - allocs/op",
+            "value": 2,
+            "unit": "allocs/op",
+            "extra": "3728059 times\n4 procs"
           }
         ]
       }
