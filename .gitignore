@@ -32,3 +32,6 @@ go.work.sum
 # .vscode/
 
 mosquitto.db
+
+# System files
+.DS_Store
