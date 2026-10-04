@@ -8,60 +8,132 @@ import (
 	"sync/atomic"
 	"time"
 
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/manaraph/stream-aggregator/internal/domain"
 	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 	"google.golang.org/protobuf/proto"
 )
 
+const (
+	defaultBatchSize     = 1000
+	defaultBatchInterval = 3 * time.Second
+	defaultQueueSize     = 10000
+)
+
 func (p *Processor) initPipeline() {
-	workerCount := 4
-	queueSize := 1000
+	batchSize := positiveIntEnv("DB_BATCH_SIZE", defaultBatchSize)
+	queueSize := positiveIntEnv("INGESTION_QUEUE_SIZE", defaultQueueSize)
+	batchInterval := durationEnv("DB_BATCH_INTERVAL", defaultBatchInterval)
 
-	if v := os.Getenv("INGESTION_WORKERS"); v != "" {
-		if n, err := strconv.Atoi(v); err == nil {
-			workerCount = n
-		}
-	}
-	if v := os.Getenv("INGESTION_QUEUE_SIZE"); v != "" {
-		if n, err := strconv.Atoi(v); err == nil {
-			queueSize = n
-		}
-	}
-
-	p.eventQueue = make(chan domain.Sensor, queueSize)
+	p.eventQueue = make(chan queuedReading, queueSize)
 	if p.ctx == nil {
 		p.ctx = context.Background()
 	}
-
-	log.Printf("Starting ingestion pipeline: workers=%d queue=%d", workerCount, queueSize)
-
-	for i := 0; i < workerCount; i++ {
-		go p.worker(i)
+	if p.writerCtx == nil {
+		p.writerCtx, p.writerStop = context.WithCancel(context.Background())
 	}
 
+	log.Printf("Starting ingestion pipeline: queue=%d batch_size=%d batch_interval=%s", queueSize, batchSize, batchInterval)
+	go p.batchWriter(batchSize, batchInterval)
 	go p.queueStatus()
 }
 
-func (p *Processor) worker(id int) {
-	log.Printf("Worker %d started", id)
+func positiveIntEnv(name string, fallback int) int {
+	value, err := strconv.Atoi(os.Getenv(name))
+	if err != nil || value < 1 {
+		return fallback
+	}
+	return value
+}
 
-	for e := range p.eventQueue {
-		p.ForwardEvent(e)
-		p.WG.Done()
+func durationEnv(name string, fallback time.Duration) time.Duration {
+	value, err := time.ParseDuration(os.Getenv(name))
+	if err != nil || value <= 0 {
+		return fallback
+	}
+	return value
+}
+
+func (p *Processor) enqueueEvent(e domain.Sensor, message mqtt.Message) {
+	p.wg.Add(1)
+	select {
+	case p.eventQueue <- queuedReading{reading: e, message: message}:
+		p.recordQueueHighWaterMark(uint32(len(p.eventQueue)))
+	case <-p.ctx.Done():
+		p.wg.Done()
 	}
 }
 
-func (p *Processor) enqueueEvent(e domain.Sensor) {
-	p.WG.Add(1)
+func (p *Processor) batchWriter(maxBatch int, interval time.Duration) {
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+	batch := make([]queuedReading, 0, maxBatch)
 
-	select {
-	case p.eventQueue <- e:
-		atomic.AddUint64(&p.processed, 1)
-		p.recordQueueHighWaterMark(uint32(len(p.eventQueue)))
-	default:
-		log.Println("WARNING: ingestion queue full, dropping event")
-		atomic.AddUint64(&p.dropped, 1)
-		p.WG.Done()
+	flush := func() bool {
+		if len(batch) == 0 {
+			return true
+		}
+		readings := make([]domain.Sensor, len(batch))
+		for i := range batch {
+			readings[i] = batch[i].reading
+		}
+
+		backoff := 100 * time.Millisecond
+		for {
+			ctx, cancel := context.WithTimeout(p.writerCtx, 10*time.Second)
+			err := p.store.InsertBatch(ctx, readings)
+			cancel()
+			if err == nil {
+				for _, item := range batch {
+					p.ForwardEvent(item.reading)
+					item.message.Ack()
+					atomic.AddUint64(&p.processed, 1)
+					p.wg.Done()
+				}
+				batch = batch[:0]
+				return true
+			}
+			log.Printf("PostgreSQL batch write failed; retrying %d readings: %v", len(batch), err)
+			select {
+			case <-p.writerCtx.Done():
+				for range batch {
+					p.wg.Done()
+				}
+				batch = batch[:0]
+				return false
+			case <-time.After(backoff):
+			}
+			if backoff < 5*time.Second {
+				backoff *= 2
+			}
+		}
+	}
+
+	for {
+		select {
+		case item := <-p.eventQueue:
+			batch = append(batch, item)
+			if len(batch) >= maxBatch && !flush() {
+				return
+			}
+		case <-ticker.C:
+			if !flush() {
+				return
+			}
+		case <-p.ctx.Done():
+			for {
+				select {
+				case item := <-p.eventQueue:
+					batch = append(batch, item)
+					if len(batch) == maxBatch && !flush() {
+						return
+					}
+				default:
+					flush()
+					return
+				}
+			}
+		}
 	}
 }
 

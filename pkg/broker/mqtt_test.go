@@ -65,7 +65,7 @@ func TestPublish(t *testing.T) {
 	payload := []byte("hello")
 
 	mockToken.On("Error").Return(nil)
-	mockClient.On("Publish", topic, byte(0), false, payload).Return(mockToken)
+	mockClient.On("Publish", topic, byte(1), false, payload).Return(mockToken)
 
 	// Wrap the mock
 	c := &MQTTClient{mc: mockClient}
@@ -97,7 +97,7 @@ func TestSubscribe(t *testing.T) {
 
 		topic := "sensors/data"
 		mockToken.On("Error").Return(nil)
-		mockClient.On("Subscribe", topic, byte(0), mock.Anything).Return(mockToken)
+		mockClient.On("Subscribe", topic, byte(1), mock.Anything).Return(mockToken)
 
 		c := &MQTTClient{mc: mockClient}
 

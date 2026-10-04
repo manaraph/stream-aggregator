@@ -22,7 +22,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24.x'
+          go-version: '1.25.x'
           cache: true
 
       - name: Setup Buf
@@ -55,6 +55,8 @@ jobs:
             .*/cmd/.*
             .*/proto/.*
             .*/pb/.*
+            .*/internal/storage/.*
+            .*/internal/services/ingestion/ingestor\.go
             .*mock_.*\.go
 
       - name: Run Benchmarks

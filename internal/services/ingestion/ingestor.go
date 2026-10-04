@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/manaraph/stream-aggregator/internal/storage"
 	"github.com/manaraph/stream-aggregator/pkg/broker"
 	"github.com/manaraph/stream-aggregator/pkg/grpcapi"
 	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
@@ -43,5 +44,12 @@ func NewProcessor() (*Processor, error) {
 		return nil, fmt.Errorf("Failed to open metrics stream: %w", err)
 	}
 
-	return &Processor{B: mclient, GRPC: conn, S: stream, M: metricsStream}, nil
+	store, err := storage.OpenPostgres(ctx, os.Getenv("DATABASE_URL"))
+	if err != nil {
+		_ = mclient.Close()
+		_ = conn.Close()
+		return nil, err
+	}
+
+	return &Processor{B: mclient, store: store, GRPC: conn, S: stream, M: metricsStream}, nil
 }

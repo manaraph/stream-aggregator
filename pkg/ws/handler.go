@@ -28,8 +28,8 @@ func (h *Hub) handler(w http.ResponseWriter, r *http.Request) {
 
 	client := NewClient(h, conn)
 
-	// Register client in hub goroutine
-	h.register <- client
+	// Wait until the hub has registered the client before starting its pumps.
+	h.registerClient(client)
 
 	// Start write pump (single writer goroutine)
 	go client.writePump()

@@ -2,6 +2,8 @@ package ingestion
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -24,19 +26,35 @@ type MetricsStreamClient interface {
 	Send(*streamv1.IngestMetricsRequest) error
 }
 
+type sensorStore interface {
+	InsertBatch(context.Context, []domain.Sensor) error
+	Close()
+}
+
 type Processor struct {
 	B          broker.Broker
+	store      sensorStore
 	GRPC       *grpc.ClientConn
 	S          SensorStreamClient
 	M          MetricsStreamClient
-	eventQueue chan domain.Sensor
+	eventQueue chan queuedReading
 	processed  uint64
 	dropped    uint64
 	maxUsed    uint32
 	grpcErrors uint32
-	WG         sync.WaitGroup
+	wg         sync.WaitGroup
+	callbackWG sync.WaitGroup
+	callbackMu sync.RWMutex
+	closing    bool
 	cancel     context.CancelFunc
 	ctx        context.Context
+	writerCtx  context.Context
+	writerStop context.CancelFunc
+}
+
+type queuedReading struct {
+	reading domain.Sensor
+	message mqtt.Message
 }
 
 func (p *Processor) Run(ctx context.Context) error {
@@ -47,12 +65,32 @@ func (p *Processor) Run(ctx context.Context) error {
 }
 
 func (p *Processor) HandleMessage(c mqtt.Client, m mqtt.Message) {
+	p.callbackMu.RLock()
+	if p.closing {
+		p.callbackMu.RUnlock()
+		return
+	}
+	p.callbackWG.Add(1)
+	p.callbackMu.RUnlock()
+	defer p.callbackWG.Done()
+
 	var e domain.Sensor
 	if err := json.Unmarshal(m.Payload(), &e); err != nil {
 		log.Println("Invalid event:", err)
+		m.Ack()
 		return
 	}
-	p.enqueueEvent(e)
+	if e.EventID == "" {
+		sum := sha256.Sum256(append(append([]byte(m.Topic()), 0), m.Payload()...))
+		e.EventID = hex.EncodeToString(sum[:])
+	}
+	if e.MeasurementType == "" {
+		e.MeasurementType = "temperature"
+	}
+	if e.Unit == "" {
+		e.Unit = "C"
+	}
+	p.enqueueEvent(e, m)
 }
 
 func (p *Processor) ForwardEvent(data domain.Sensor) {
@@ -62,9 +100,12 @@ func (p *Processor) ForwardEvent(data domain.Sensor) {
 	}
 
 	err := p.S.Send(&streamv1.IngestSensorRequest{
-		Sensor:    data.Sensor,
-		Value:     data.Value,
-		Timestamp: timestamppb.New(data.Timestamp),
+		Sensor:          data.Sensor,
+		Value:           data.Value,
+		Timestamp:       timestamppb.New(data.Timestamp),
+		EventId:         data.EventID,
+		MeasurementType: data.MeasurementType,
+		Unit:            data.Unit,
 	})
 
 	if err != nil {
@@ -86,19 +127,32 @@ func (p *Processor) ForwardMetrics(metrics *streamv1.IngestMetricsRequest) {
 func (p *Processor) Close(ctx context.Context) error {
 	log.Println("Shutting down processor...")
 
-	if p.cancel != nil {
-		p.cancel()
-	}
-
 	if p.B != nil {
 		p.B.Close()
 	}
-
-	close(p.eventQueue)
+	p.callbackMu.Lock()
+	p.closing = true
+	p.callbackMu.Unlock()
+	if p.cancel != nil {
+		p.cancel()
+	}
+	callbacksDone := make(chan struct{})
+	go func() {
+		p.callbackWG.Wait()
+		close(callbacksDone)
+	}()
+	select {
+	case <-callbacksDone:
+	case <-ctx.Done():
+		if p.writerStop != nil {
+			p.writerStop()
+		}
+		return fmt.Errorf("shutdown timed out waiting for MQTT callbacks: %w", ctx.Err())
+	}
 
 	done := make(chan struct{})
 	go func() {
-		p.WG.Wait()
+		p.wg.Wait()
 		close(done)
 	}()
 
@@ -106,7 +160,16 @@ func (p *Processor) Close(ctx context.Context) error {
 	case <-done:
 		log.Println("Workers drained successfully")
 	case <-ctx.Done():
+		if p.writerStop != nil {
+			p.writerStop()
+		}
 		return fmt.Errorf("shutdown timed out: %w", ctx.Err())
+	}
+	if p.writerStop != nil {
+		p.writerStop()
+	}
+	if p.store != nil {
+		p.store.Close()
 	}
 
 	if p.GRPC != nil {

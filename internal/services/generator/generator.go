@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"math/rand"
 	"os"
@@ -57,9 +58,12 @@ func (p *Publisher) Run(ctx context.Context) {
 			return
 		case <-ticker.C:
 			event := domain.Sensor{
-				Sensor:    "sensor-" + string(rune('A'+rand.Intn(5))),
-				Value:     10 + rand.Float64()*20,
-				Timestamp: time.Now().UTC(),
+				EventID:         fmt.Sprintf("%s-%d", os.Getenv("GENERATOR_ID"), time.Now().UnixNano()),
+				Sensor:          "sensor-" + string(rune('A'+rand.Intn(5))),
+				MeasurementType: "temperature",
+				Unit:            "C",
+				Value:           10 + rand.Float64()*20,
+				Timestamp:       time.Now().UTC(),
 			}
 
 			if err := p.SendEvent(event); err != nil {

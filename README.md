@@ -4,12 +4,29 @@ This project implements a real-time event aggregation system for streaming simul
 
 ## Architecture
 
-It contains four services managed using docker.
+It contains five services managed using Docker Compose.
 
 - Generator Service: Generates and publishes simulated sensor events to MQTT topics.
 - Mosquitto (MQTT): Message broker that decouples the generator service and the ingestion service and distributes sensor events between services.
-- Ingestion Service: Consumes events from the message broker, and forwards them to our gateway via gRPC streaming.
+- PostgreSQL: Stores raw sensor readings on a named Docker volume so they survive container recreation.
+- Ingestion Service: Consumes events from the message broker, writes readings to PostgreSQL in batches, then forwards committed readings to the gateway via gRPC streaming.
 - Gateway Service: Exposes a gRPC streaming endpoint for internal services and a WebSocket endpoint for external clients.
+
+The ingestion service flushes a batch when it reaches `DB_BATCH_SIZE` or when `DB_BATCH_INTERVAL` elapses. Defaults are 1,000 readings and 3 seconds. The bounded queue applies backpressure when PostgreSQL cannot keep up. MQTT uses QoS 1 and acknowledges valid readings only after the PostgreSQL transaction commits; duplicate deliveries are ignored by the event ID primary key. The broker also uses a persistent subscriber session and stores its own state under the mounted `mosquitto/data` directory.
+
+Readings include the event ID, sensor ID, measurement type, unit, value, event timestamp, and database receive timestamp. The initial schema is applied automatically when ingestion starts. Time-window aggregates are intentionally computed from the raw readings when needed.
+
+Example hourly average query:
+
+```sql
+SELECT sensor_id, measurement_type, unit,
+       date_bin('1 hour', event_time, TIMESTAMPTZ '2000-01-01 00:00:00+00') AS window_start,
+       AVG(value) AS average_value,
+       COUNT(*) AS reading_count
+FROM sensor_readings
+GROUP BY sensor_id, measurement_type, unit, window_start
+ORDER BY window_start, sensor_id;
+```
 
 ![Architecture Diagram](docs/architecture.svg)
 
@@ -80,4 +97,4 @@ make open-coverage
 - [x] Architecture and documentation.
 - [x] Unit testing and CI checks for coverage and buf lint/breaking changes.
 - [x] Expose websocket api for viewing metrics - event count, delivery rate, latency, etc.
-- [ ] Save sensor data to persistent storage.
+- [x] Save raw sensor data to persistent PostgreSQL storage with configurable batch writes.

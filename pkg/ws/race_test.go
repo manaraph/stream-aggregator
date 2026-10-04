@@ -22,7 +22,7 @@ func TestHubRaceStress(t *testing.T) {
 				send: make(chan []byte, 256),
 			}
 
-			h.register <- c
+			h.registerClient(c)
 
 			for j := 0; j < 100; j++ {
 				h.Broadcast([]byte(fmt.Sprintf(`{"n": %d}`, j)))
@@ -40,7 +40,7 @@ func BenchmarkHubBroadcast(b *testing.B) {
 	go h.Run()
 
 	c := &Client{hub: h, send: make(chan []byte, 1024)}
-	h.register <- c
+	h.registerClient(c)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {

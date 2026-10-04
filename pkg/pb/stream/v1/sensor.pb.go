@@ -23,12 +23,15 @@ const (
 )
 
 type IngestSensorRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Sensor        string                 `protobuf:"bytes,1,opt,name=sensor,proto3" json:"sensor,omitempty"`
-	Value         float64                `protobuf:"fixed64,2,opt,name=value,proto3" json:"value,omitempty"`
-	Timestamp     *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Sensor          string                 `protobuf:"bytes,1,opt,name=sensor,proto3" json:"sensor,omitempty"`
+	Value           float64                `protobuf:"fixed64,2,opt,name=value,proto3" json:"value,omitempty"`
+	Timestamp       *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	EventId         string                 `protobuf:"bytes,4,opt,name=event_id,json=eventId,proto3" json:"event_id,omitempty"`
+	MeasurementType string                 `protobuf:"bytes,5,opt,name=measurement_type,json=measurementType,proto3" json:"measurement_type,omitempty"`
+	Unit            string                 `protobuf:"bytes,6,opt,name=unit,proto3" json:"unit,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *IngestSensorRequest) Reset() {
@@ -80,6 +83,27 @@ func (x *IngestSensorRequest) GetTimestamp() *timestamppb.Timestamp {
 		return x.Timestamp
 	}
 	return nil
+}
+
+func (x *IngestSensorRequest) GetEventId() string {
+	if x != nil {
+		return x.EventId
+	}
+	return ""
+}
+
+func (x *IngestSensorRequest) GetMeasurementType() string {
+	if x != nil {
+		return x.MeasurementType
+	}
+	return ""
+}
+
+func (x *IngestSensorRequest) GetUnit() string {
+	if x != nil {
+		return x.Unit
+	}
+	return ""
 }
 
 type IngestSensorResponse struct {
@@ -138,11 +162,14 @@ var File_stream_v1_sensor_proto protoreflect.FileDescriptor
 
 const file_stream_v1_sensor_proto_rawDesc = "" +
 	"\n" +
-	"\x16stream/v1/sensor.proto\x12\tstream.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"}\n" +
+	"\x16stream/v1/sensor.proto\x12\tstream.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xd7\x01\n" +
 	"\x13IngestSensorRequest\x12\x16\n" +
 	"\x06sensor\x18\x01 \x01(\tR\x06sensor\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\x01R\x05value\x128\n" +
-	"\ttimestamp\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\ttimestamp\"J\n" +
+	"\ttimestamp\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\ttimestamp\x12\x19\n" +
+	"\bevent_id\x18\x04 \x01(\tR\aeventId\x12)\n" +
+	"\x10measurement_type\x18\x05 \x01(\tR\x0fmeasurementType\x12\x12\n" +
+	"\x04unit\x18\x06 \x01(\tR\x04unit\"J\n" +
 	"\x14IngestSensorResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage2b\n" +
