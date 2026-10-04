@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791033685719,
+  "lastUpdate": 1791109155737,
   "repoUrl": "https://github.com/manaraph/stream-aggregator",
   "entries": {
     "Benchmark": [
@@ -420,6 +420,50 @@ window.BENCHMARK_DATA = {
             "value": 3,
             "unit": "allocs/op",
             "extra": "5178909 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "manaraph",
+            "username": "manaraph"
+          },
+          "committer": {
+            "name": "manaraph",
+            "username": "manaraph"
+          },
+          "id": "e0ac145c2a12dd83ee514617f2cf677d3e3de805",
+          "message": "Save raw sensor data to persistent PostgreSQL storage with configurable batch writes",
+          "timestamp": "2026-10-03T13:22:05Z",
+          "url": "https://github.com/manaraph/stream-aggregator/pull/10/commits/e0ac145c2a12dd83ee514617f2cf677d3e3de805"
+        },
+        "date": 1791109155273,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkHubBroadcast",
+            "value": 250.6,
+            "unit": "ns/op\t      40 B/op\t       3 allocs/op",
+            "extra": "4718271 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - ns/op",
+            "value": 250.6,
+            "unit": "ns/op",
+            "extra": "4718271 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - B/op",
+            "value": 40,
+            "unit": "B/op",
+            "extra": "4718271 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - allocs/op",
+            "value": 3,
+            "unit": "allocs/op",
+            "extra": "4718271 times\n4 procs"
           }
         ]
       }
