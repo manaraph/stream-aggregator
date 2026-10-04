@@ -5,11 +5,17 @@ import mqtt "github.com/eclipse/paho.mqtt.golang"
 type MockMessage struct {
 	mqtt.Message
 	PayloadData []byte
+	TopicData   string
+	Acked       bool
 }
 
 func (m *MockMessage) Payload() []byte {
 	return m.PayloadData
 }
+
+func (m *MockMessage) Topic() string { return m.TopicData }
+
+func (m *MockMessage) Ack() { m.Acked = true }
 
 type FakeBroker struct {
 	Messages chan []byte

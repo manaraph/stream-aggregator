@@ -1,4 +1,23 @@
 services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: stream-aggregator-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-stream_aggregator}
+      POSTGRES_USER: ${POSTGRES_USER:-stream_aggregator}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-stream_aggregator_dev}
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 5s
+      retries: 10
+      start_period: 5s
+
   mosquitto:
     image: eclipse-mosquitto:2.0
     container_name: mosquitto
@@ -57,17 +76,26 @@ services:
       dockerfile: deployments/docker/Dockerfile.ingestion
     container_name: ingestion-service
     depends_on:
-      - mosquitto
-      - gateway
+      mosquitto:
+        condition: service_started
+      gateway:
+        condition: service_started
+      postgres:
+        condition: service_healthy
     environment:
       - MQTT_BROKER
       - INGESTION_ID
       - GATEWAY_ADDR
-      - INGESTION_WORKERS
       - INGESTION_QUEUE_SIZE
+      - DB_BATCH_INTERVAL
+      - DB_BATCH_SIZE
+      - DATABASE_URL
     networks:
       - app-network
 
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  postgres_data:

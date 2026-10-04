@@ -41,9 +41,10 @@ func TestProcessor_FullLifecycle(t *testing.T) {
 
 	p := &Processor{
 		B:          fakeBroker,
+		store:      &testBatchStore{},
 		S:          mockStream,
-		WG:         sync.WaitGroup{},
-		eventQueue: make(chan domain.Sensor, 10),
+		wg:         sync.WaitGroup{},
+		eventQueue: make(chan queuedReading, 10),
 	}
 
 	mockStream.On("Send", mock.Anything).Return(nil)
@@ -57,16 +58,15 @@ func TestProcessor_FullLifecycle(t *testing.T) {
 	// Simulate an MQTT message arriving.
 	sensor := domain.Sensor{Sensor: "test-device", Value: 99.9, Timestamp: time.Now()}
 	payload, _ := json.Marshal(sensor)
-	mockMsg := &broker.MockMessage{PayloadData: payload}
+	mockMsg := &broker.MockMessage{PayloadData: payload, TopicData: "sensors/temperature"}
 
 	mockStream.On("Send", mock.Anything).Return(nil)
 
 	p.HandleMessage(nil, mockMsg)
 
-	// Verify it was queued/processed
+	assert.NoError(t, p.Close(ctx))
 	assert.Equal(t, uint64(1), atomic.LoadUint64(&p.processed))
-
-	p.Close(ctx)
+	assert.True(t, mockMsg.Acked)
 
 	// Verify mock was called before Close finished
 	mockStream.AssertExpectations(t)
@@ -85,9 +85,9 @@ func TestHandleMessage_InvalidJSON(t *testing.T) {
 
 func TestProcessor_Close_Timeout(t *testing.T) {
 	p := &Processor{
-		eventQueue: make(chan domain.Sensor, 1),
+		eventQueue: make(chan queuedReading, 1),
 	}
-	p.WG.Add(1) // Simulate a stuck worker that never calls Done()
+	p.wg.Add(1) // Simulate a stuck worker that never calls Done()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Millisecond)
 	defer cancel()
@@ -118,13 +118,13 @@ func TestForwardEvent_Errors(t *testing.T) {
 func TestReportQueueStatusForwardsMetrics(t *testing.T) {
 	metricsStream := new(MockMetricsStream)
 	p := &Processor{
-		eventQueue: make(chan domain.Sensor, 4),
+		eventQueue: make(chan queuedReading, 4),
 		M:          metricsStream,
 		processed:  9,
 		dropped:    2,
 	}
-	p.eventQueue <- domain.Sensor{}
-	p.eventQueue <- domain.Sensor{}
+	p.eventQueue <- queuedReading{}
+	p.eventQueue <- queuedReading{}
 
 	metricsStream.On("Send", &streamv1.IngestMetricsRequest{
 		Queue: &streamv1.QueueMetrics{

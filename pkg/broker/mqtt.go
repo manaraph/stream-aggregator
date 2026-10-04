@@ -17,7 +17,11 @@ func NewMQTTClient(clientId string) (*MQTTClient, error) {
 		return nil, errors.New("MQTT_BROKER not defined")
 	}
 
-	opts := mqtt.NewClientOptions().AddBroker(mbroker).SetClientID(clientId)
+	opts := mqtt.NewClientOptions().AddBroker(mbroker).
+		SetClientID(clientId).
+		SetCleanSession(false).
+		SetOrderMatters(false).
+		SetAutoAckDisabled(true)
 	mc := mqtt.NewClient(opts)
 	if token := mc.Connect(); token.Wait() && token.Error() != nil {
 		return nil, token.Error()
@@ -27,7 +31,8 @@ func NewMQTTClient(clientId string) (*MQTTClient, error) {
 }
 
 func (c *MQTTClient) Publish(topic string, data []byte) error {
-	token := c.mc.Publish(topic, 0, false, data)
+	token := c.mc.Publish(topic, 1, false, data)
+	token.Wait()
 	return token.Error()
 }
 
@@ -36,7 +41,8 @@ func (c *MQTTClient) Subscribe(topic string, handler func(c mqtt.Client, m mqtt.
 		return errors.New("mqtt: handler cannot be nil")
 	}
 
-	token := c.mc.Subscribe(topic, 0, handler)
+	token := c.mc.Subscribe(topic, 1, handler)
+	token.Wait()
 	return token.Error()
 }
 
