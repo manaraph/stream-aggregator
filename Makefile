@@ -8,11 +8,13 @@ help:
 	@echo "Usage: make [target]"
 	@echo ""
 	@echo "Available targets:"
+	@echo "  generate-mocks\t\t\t- Generate interface mocks with Mockery"
 	@echo "  config					- Copy environment config from .env.example" 
 	@echo "  up							- Build and run services with docker" 
 	@echo "  down						- Shut down services in docker"
-	@echo "  test						- Run tests with race detection" 
-	@echo "  coverage				- Run tests and show coverage" 
+	@echo "  test						- Run tests with race detection"
+	@echo "  integration-test			- Run PostgreSQL integration tests"
+	@echo "  coverage				- Run tests and show coverage"
 	@echo "  open-coverage 	- Run tests and opens coverage in the browser" 
 	@echo ""
 
@@ -21,6 +23,14 @@ config:
 
 test:
 	go test ./... -race
+
+generate-mocks:
+	go run github.com/vektra/mockery/v2@v2.53.5
+
+integration-test:
+	test_url="$${TEST_DATABASE_URL:-$$(sed -n 's/^TEST_DATABASE_URL=//p' .env 2>/dev/null | tail -n 1)}"; \
+	if [ -z "$$test_url" ]; then echo "Skipping PostgreSQL integration tests: TEST_DATABASE_URL is not set"; exit 0; fi; \
+	TEST_DATABASE_URL="$$test_url" go test ./internal/storage -run TestPostgresBatchInsertAndDuplicateDelivery -count=1
 
 up:
 	docker compose up --build

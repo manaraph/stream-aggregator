@@ -11,16 +11,14 @@ import (
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/manaraph/stream-aggregator/internal/domain"
+	generatormocks "github.com/manaraph/stream-aggregator/internal/services/generator/mocks"
 	"github.com/manaraph/stream-aggregator/pkg/broker"
 	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
-
-type stubMetricsClient struct {
-	requests []*streamv1.IngestMetricsRequest
-}
 
 type failingBroker struct {
 	publishErr error
@@ -31,11 +29,6 @@ func (f *failingBroker) Subscribe(string, func(mqtt.Client, mqtt.Message)) error
 	return nil
 }
 func (f *failingBroker) Close() error { return nil }
-
-func (s *stubMetricsClient) Send(req *streamv1.IngestMetricsRequest) error {
-	s.requests = append(s.requests, req)
-	return nil
-}
 
 func TestPublisher_Run(t *testing.T) {
 	interval = 10 * time.Millisecond
@@ -105,17 +98,16 @@ func TestPublisher_ReportMetrics(t *testing.T) {
 
 	assert.Equal(t, uint64(5), pub.reportMetrics(2, 5*time.Second))
 
-	client := &stubMetricsClient{}
+	client := generatormocks.NewMockMetricsStreamClient(t)
+	var request *streamv1.IngestMetricsRequest
+	client.EXPECT().Send(mock.Anything).Run(func(got *streamv1.IngestMetricsRequest) { request = got }).Return(nil)
 	pub.M = client
 	assert.Equal(t, uint64(5), pub.reportMetrics(2, 5*time.Second))
-	if assert.Len(t, client.requests, 1) {
-		request := client.requests[0]
-		assert.NotNil(t, request.GetThroughput())
-		assert.NotNil(t, request.GetBroker())
-		assert.Equal(t, float64(3)/5, request.GetThroughput().GetPublishRate())
-		assert.True(t, request.GetBroker().GetConnected())
-		assert.Equal(t, uint32(2), request.GetBroker().GetErrors())
-	}
+	assert.NotNil(t, request.GetThroughput())
+	assert.NotNil(t, request.GetBroker())
+	assert.Equal(t, float64(3)/5, request.GetThroughput().GetPublishRate())
+	assert.True(t, request.GetBroker().GetConnected())
+	assert.Equal(t, uint32(2), request.GetBroker().GetErrors())
 }
 
 func TestSendEventRecordsPublishError(t *testing.T) {

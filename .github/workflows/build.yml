@@ -9,6 +9,22 @@ on:
 jobs:
   pipeline:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: stream_aggregator_test
+          POSTGRES_USER: stream_aggregator_test
+          POSTGRES_PASSWORD: test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U stream_aggregator_test -d stream_aggregator_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgres://stream_aggregator_test:test_password@localhost:5432/stream_aggregator_test?sslmode=disable
     permissions:
       contents: write
       pull-requests: write
@@ -56,7 +72,6 @@ jobs:
             .*/proto/.*
             .*/pb/.*
             .*/internal/storage/.*
-            .*/internal/services/ingestion/ingestor\.go
             .*mock_.*\.go
 
       - name: Run Benchmarks

@@ -1,4 +1,4 @@
-package grpcapi
+package grpcapi_test
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/manaraph/stream-aggregator/pkg/events"
+	"github.com/manaraph/stream-aggregator/pkg/grpcapi"
 	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 	"github.com/manaraph/stream-aggregator/pkg/ws"
 	"github.com/stretchr/testify/assert"
@@ -23,7 +24,7 @@ type mockDispatcher struct {
 
 func TestRegisterServices(t *testing.T) {
 	grpcServer := grpc.NewServer()
-	RegisterServices(grpcServer, NewWebSocketDispatcher(ws.NewHub()))
+	grpcapi.RegisterServices(grpcServer, grpcapi.NewWebSocketDispatcher(ws.NewHub()))
 
 	services := grpcServer.GetServiceInfo()
 	_, sensorsRegistered := services["stream.v1.SensorService"]
@@ -76,7 +77,7 @@ func TestIngestMetricsPublishesTypedEvent(t *testing.T) {
 	}
 	dispatcher := &mockDispatcher{events: make(chan events.Message, 1)}
 	stream := &mockMetricsStream{reqCh: make(chan *streamv1.IngestMetricsRequest, 1)}
-	server := &Server{Dispatcher: dispatcher}
+	server := &grpcapi.Server{Dispatcher: dispatcher}
 
 	go func() {
 		_ = server.IngestMetrics(stream)
@@ -121,7 +122,7 @@ func TestIngestSensor(t *testing.T) {
 		reqCh: make(chan *streamv1.IngestSensorRequest, 1),
 	}
 
-	server := &Server{
+	server := &grpcapi.Server{
 		Dispatcher: dispatcher,
 	}
 

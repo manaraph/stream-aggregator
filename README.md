@@ -81,6 +81,24 @@ make down
 make test
 ```
 
+### Generate interface mocks
+
+Mockery generates the configured interface mocks from `.mockery.yaml`:
+
+```sh
+make generate-mocks
+```
+
+Regenerate mocks after changing a configured interface. Lightweight fakes remain in tests where they model behavior such as an in-memory broker or a store that retries and records batches.
+
+### Run PostgreSQL integration tests
+
+```sh
+make integration-test
+```
+
+This runs the storage integration test only when `TEST_DATABASE_URL` is set in the environment or `.env`; otherwise Make reports that it skipped the test. For a local Compose database, start PostgreSQL with `docker compose up -d postgres` and set `TEST_DATABASE_URL` to its host URL (usually `localhost:5432`). The test removes its uniquely prefixed rows when it finishes.
+
 ### Run tests and show coverage
 
 ```
