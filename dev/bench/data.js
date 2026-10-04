@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791109402742,
+  "lastUpdate": 1791119309743,
   "repoUrl": "https://github.com/manaraph/stream-aggregator",
   "entries": {
     "Benchmark": [
@@ -512,6 +512,50 @@ window.BENCHMARK_DATA = {
             "value": 2,
             "unit": "allocs/op",
             "extra": "3728059 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "manaraph",
+            "username": "manaraph"
+          },
+          "committer": {
+            "name": "manaraph",
+            "username": "manaraph"
+          },
+          "id": "59c433cbdf03ebcfbb7abd1d6bfecffff8d80c62",
+          "message": "Add integration tests, generate mocks with mockery and use mocks",
+          "timestamp": "2026-10-04T10:22:02Z",
+          "url": "https://github.com/manaraph/stream-aggregator/pull/11/commits/59c433cbdf03ebcfbb7abd1d6bfecffff8d80c62"
+        },
+        "date": 1791119309529,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkHubBroadcast",
+            "value": 242.7,
+            "unit": "ns/op\t      40 B/op\t       3 allocs/op",
+            "extra": "4930774 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - ns/op",
+            "value": 242.7,
+            "unit": "ns/op",
+            "extra": "4930774 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - B/op",
+            "value": 40,
+            "unit": "B/op",
+            "extra": "4930774 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - allocs/op",
+            "value": 3,
+            "unit": "allocs/op",
+            "extra": "4930774 times\n4 procs"
           }
         ]
       }
