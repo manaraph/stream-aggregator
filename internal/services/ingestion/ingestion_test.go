@@ -1,66 +1,99 @@
 package ingestion
 
 import (
-	"os"
+	"context"
+	"errors"
+	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	ingestionmocks "github.com/manaraph/stream-aggregator/internal/services/ingestion/mocks"
+	"github.com/manaraph/stream-aggregator/pkg/broker"
+	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
+	"google.golang.org/grpc"
 )
 
-func TestNewProcessor_Config(t *testing.T) {
-	// Clean up env before each sub-test
-	os.Unsetenv("INGESTION_ID")
-	os.Unsetenv("GATEWAY_ADDR")
-	os.Unsetenv("MQTT_BROKER")
+func factorySet(conn *grpc.ClientConn, b *broker.FakeBroker, store sensorStore) processorFactories {
+	return processorFactories{
+		connectGateway: func() (streamv1.SensorServiceClient, *grpc.ClientConn, error) { return nil, conn, nil },
+		newBroker:      func(string) (broker.Broker, error) { return b, nil },
+		openSensor: func(streamv1.SensorServiceClient, context.Context) (SensorStreamClient, error) {
+			return &ingestionmocks.MockSensorStreamClient{}, nil
+		},
+		openMetrics: func(*grpc.ClientConn, context.Context) (MetricsStreamClient, error) {
+			return &ingestionmocks.MockMetricsStreamClient{}, nil
+		},
+		openStore: func(context.Context, string) (sensorStore, error) { return store, nil },
+	}
+}
 
-	t.Run("Missing INGESTION_ID", func(t *testing.T) {
-		p, err := NewProcessor()
-		assert.Nil(t, p)
-		assert.EqualError(t, err, "INGESTION_ID not defined")
-	})
+func TestNewProcessorRejectsMissingID(t *testing.T) {
+	p, err := newProcessor(context.Background(), "", "", processorFactories{})
+	if p != nil || err == nil || err.Error() != "INGESTION_ID not defined" {
+		t.Fatalf("got processor=%v err=%v", p, err)
+	}
+}
 
-	t.Run("Missing GATEWAY_ADDR", func(t *testing.T) {
-		os.Setenv("INGESTION_ID", "test-id")
-		defer os.Unsetenv("INGESTION_ID")
+func TestNewProcessorSuccess(t *testing.T) {
+	conn, err := grpc.NewClient("passthrough:///constructor-test", grpc.WithInsecure())
+	if err != nil {
+		t.Fatal(err)
+	}
+	store := NewMockSensorStore(t)
+	store.EXPECT().Close()
+	p, err := newProcessor(context.Background(), "test-ingestor", "postgres://unused", factorySet(conn, broker.NewFakeBroker(), store))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if p.B == nil || p.store != store || p.GRPC != conn || p.S == nil || p.M == nil {
+		t.Fatal("processor was not initialized with all dependencies")
+	}
+	if err := p.Close(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+}
 
-		p, err := NewProcessor()
-		assert.Nil(t, p)
-		assert.EqualError(t, err, "GATEWAY_ADDR not defined")
-	})
-
-	t.Run("MQTT Connection Failure", func(t *testing.T) {
-		os.Setenv("INGESTION_ID", "test-id")
-		os.Setenv("GATEWAY_ADDR", "localhost:50051")
-		// Point MQTT to a port that is definitely closed
-		os.Setenv("MQTT_BROKER", "tcp://localhost:1234")
-
-		defer os.Clearenv()
-
-		p, err := NewProcessor()
-		assert.Nil(t, p)
-		assert.Error(t, err, "Should fail because MQTT broker is unreachable")
-	})
-
-	t.Run("Missing MQTT Broker", func(t *testing.T) {
-		os.Setenv("INGESTION_ID", "test-id")
-		os.Setenv("GATEWAY_ADDR", "127.0.0.1:50051")
-		os.Unsetenv("MQTT_BROKER")
-		defer os.Clearenv()
-
-		p, err := NewProcessor()
-		assert.Nil(t, p)
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "MQTT_BROKER")
-	})
-
-	t.Run("Gateway Address Still Fails Fast", func(t *testing.T) {
-		os.Setenv("INGESTION_ID", "test-id")
-		os.Setenv("GATEWAY_ADDR", "127.0.0.1:65535")
-		os.Setenv("MQTT_BROKER", "tcp://127.0.0.1:1883")
-		defer os.Clearenv()
-
-		p, err := NewProcessor()
-		assert.Nil(t, p)
-		assert.Error(t, err)
-	})
+func TestNewProcessorFactoryFailuresCleanUp(t *testing.T) {
+	tests := []struct {
+		name      string
+		configure func(*processorFactories)
+		wantError string
+	}{
+		{"gateway", func(f *processorFactories) {
+			f.connectGateway = func() (streamv1.SensorServiceClient, *grpc.ClientConn, error) { return nil, nil, errors.New("gateway") }
+		}, "gateway"},
+		{"broker", func(f *processorFactories) {
+			f.newBroker = func(string) (broker.Broker, error) { return nil, errors.New("broker") }
+		}, "broker"},
+		{"sensor stream", func(f *processorFactories) {
+			f.openSensor = func(streamv1.SensorServiceClient, context.Context) (SensorStreamClient, error) {
+				return nil, errors.New("sensor stream")
+			}
+		}, "failed to open sensor gRPC stream"},
+		{"metrics stream", func(f *processorFactories) {
+			f.openMetrics = func(*grpc.ClientConn, context.Context) (MetricsStreamClient, error) {
+				return nil, errors.New("metrics stream")
+			}
+		}, "failed to open metrics gRPC stream"},
+		{"store", func(f *processorFactories) {
+			f.openStore = func(context.Context, string) (sensorStore, error) { return nil, errors.New("store") }
+		}, "store"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			conn, err := grpc.NewClient("passthrough:///constructor-failure", grpc.WithInsecure())
+			if err != nil {
+				t.Fatal(err)
+			}
+			b := broker.NewFakeBroker()
+			f := factorySet(conn, b, NewMockSensorStore(t))
+			tt.configure(&f)
+			p, err := newProcessor(context.Background(), "test-ingestor", "", f)
+			if p != nil || err == nil || !strings.Contains(err.Error(), tt.wantError) {
+				t.Fatalf("got processor=%v err=%v", p, err)
+			}
+			if tt.name != "gateway" && conn.GetState().String() != "SHUTDOWN" {
+				t.Fatalf("connection was not closed: %s", conn.GetState())
+			}
+		})
+	}
 }

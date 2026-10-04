@@ -1,17 +1,18 @@
-package events
+package events_test
 
 import (
 	"encoding/json"
 	"strings"
 	"testing"
 
+	"github.com/manaraph/stream-aggregator/pkg/events"
 	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/proto"
 )
 
 func TestNewMetricsMessageUsesCamelCaseJSON(t *testing.T) {
-	message := NewMetricsMessage(&streamv1.IngestMetricsRequest{
+	message := events.NewMetricsMessage(&streamv1.IngestMetricsRequest{
 		Queue:      &streamv1.QueueMetrics{MaxUsed: proto.Uint32(3)},
 		Throughput: &streamv1.ThroughputMetrics{WebsocketRate: proto.Float64(2.5)},
 		Runtime:    &streamv1.RuntimeMetrics{UptimeSeconds: proto.Uint64(10), BackpressureLevel: proto.Uint32(4)},
@@ -29,7 +30,7 @@ func TestNewMetricsMessageUsesCamelCaseJSON(t *testing.T) {
 }
 
 func TestNewMetricsMessageConvertsAllMetricSections(t *testing.T) {
-	message := NewMetricsMessage(&streamv1.IngestMetricsRequest{
+	message := events.NewMetricsMessage(&streamv1.IngestMetricsRequest{
 		Queue:      &streamv1.QueueMetrics{Processed: proto.Uint64(10), Dropped: proto.Uint64(2), Used: proto.Uint32(5), Capacity: proto.Uint32(8), MaxUsed: proto.Uint32(7), Utilization: proto.Float64(0.75)},
 		Throughput: &streamv1.ThroughputMetrics{PublishRate: proto.Float64(3.2), IngestionRate: proto.Float64(2.8), GrpcRate: proto.Float64(1.4), WebsocketRate: proto.Float64(0.9)},
 		Latency:    &streamv1.LatencyMetrics{AverageMs: proto.Uint32(12), P95Ms: proto.Uint32(25), MaxMs: proto.Uint32(40)},
@@ -38,7 +39,7 @@ func TestNewMetricsMessageConvertsAllMetricSections(t *testing.T) {
 		Runtime:    &streamv1.RuntimeMetrics{UptimeSeconds: proto.Uint64(120), Goroutines: proto.Uint32(9), MemoryBytes: proto.Uint64(2048), WebsocketClients: proto.Uint32(6), BackpressureLevel: proto.Uint32(1)},
 	})
 
-	metrics, ok := message.Data.(MetricsData)
+	metrics, ok := message.Data.(events.MetricsData)
 	assert.True(t, ok)
 	assert.NotNil(t, metrics.Queue)
 	assert.NotNil(t, metrics.Throughput)
@@ -49,8 +50,8 @@ func TestNewMetricsMessageConvertsAllMetricSections(t *testing.T) {
 }
 
 func TestNewMetricsMessageHandlesEmptyPayload(t *testing.T) {
-	message := NewMetricsMessage(&streamv1.IngestMetricsRequest{})
-	metrics, ok := message.Data.(MetricsData)
+	message := events.NewMetricsMessage(&streamv1.IngestMetricsRequest{})
+	metrics, ok := message.Data.(events.MetricsData)
 	assert.True(t, ok)
 	assert.Nil(t, metrics.Queue)
 	assert.Nil(t, metrics.Throughput)

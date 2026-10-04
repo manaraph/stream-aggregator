@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/manaraph/stream-aggregator/internal/domain"
+	ingestionmocks "github.com/manaraph/stream-aggregator/internal/services/ingestion/mocks"
 	"github.com/manaraph/stream-aggregator/pkg/broker"
 	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 	"github.com/stretchr/testify/assert"
@@ -17,27 +18,9 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-type MockStream struct {
-	mock.Mock
-}
-
-type MockMetricsStream struct {
-	mock.Mock
-}
-
-func (m *MockMetricsStream) Send(req *streamv1.IngestMetricsRequest) error {
-	args := m.Called(req)
-	return args.Error(0)
-}
-
-func (m *MockStream) Send(req *streamv1.IngestSensorRequest) error {
-	args := m.Called(req)
-	return args.Error(0)
-}
-
 func TestProcessor_FullLifecycle(t *testing.T) {
 	fakeBroker := broker.NewFakeBroker()
-	mockStream := new(MockStream)
+	mockStream := ingestionmocks.NewMockSensorStreamClient(t)
 
 	p := &Processor{
 		B:          fakeBroker,
@@ -47,7 +30,7 @@ func TestProcessor_FullLifecycle(t *testing.T) {
 		eventQueue: make(chan queuedReading, 10),
 	}
 
-	mockStream.On("Send", mock.Anything).Return(nil)
+	mockStream.EXPECT().Send(mock.Anything).Return(nil)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -59,8 +42,6 @@ func TestProcessor_FullLifecycle(t *testing.T) {
 	sensor := domain.Sensor{Sensor: "test-device", Value: 99.9, Timestamp: time.Now()}
 	payload, _ := json.Marshal(sensor)
 	mockMsg := &broker.MockMessage{PayloadData: payload, TopicData: "sensors/temperature"}
-
-	mockStream.On("Send", mock.Anything).Return(nil)
 
 	p.HandleMessage(nil, mockMsg)
 
@@ -105,8 +86,8 @@ func TestForwardEvent_Errors(t *testing.T) {
 	})
 
 	t.Run("gRPC Send Failed", func(t *testing.T) {
-		mockS := new(MockStream)
-		mockS.On("Send", mock.Anything).Return(errors.New("connection lost"))
+		mockS := ingestionmocks.NewMockSensorStreamClient(t)
+		mockS.EXPECT().Send(mock.Anything).Return(errors.New("connection lost"))
 
 		p := &Processor{S: mockS}
 		p.ForwardEvent(domain.Sensor{Sensor: "test"})
@@ -116,7 +97,7 @@ func TestForwardEvent_Errors(t *testing.T) {
 }
 
 func TestReportQueueStatusForwardsMetrics(t *testing.T) {
-	metricsStream := new(MockMetricsStream)
+	metricsStream := ingestionmocks.NewMockMetricsStreamClient(t)
 	p := &Processor{
 		eventQueue: make(chan queuedReading, 4),
 		M:          metricsStream,
@@ -126,7 +107,7 @@ func TestReportQueueStatusForwardsMetrics(t *testing.T) {
 	p.eventQueue <- queuedReading{}
 	p.eventQueue <- queuedReading{}
 
-	metricsStream.On("Send", &streamv1.IngestMetricsRequest{
+	metricsStream.EXPECT().Send(&streamv1.IngestMetricsRequest{
 		Queue: &streamv1.QueueMetrics{
 			Processed:   proto.Uint64(9),
 			Dropped:     proto.Uint64(2),

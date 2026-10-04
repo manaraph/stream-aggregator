@@ -1,0 +1,49 @@
+with-expecter: true
+all: false
+mockname: "Mock{{.InterfaceNameCamel}}"
+resolve-type-alias: false
+disable-version-string: true
+issue-845-fix: true
+packages:
+  github.com/manaraph/stream-aggregator/pkg/broker:
+    config:
+      dir: "{{.InterfaceDir}}/mocks"
+      outpkg: mocks
+      filename: "mock_{{.InterfaceNameSnake}}.go"
+    interfaces:
+      Broker: {}
+  github.com/manaraph/stream-aggregator/pkg/ws:
+    config:
+      dir: "{{.InterfaceDir}}/mocks"
+      outpkg: mocks
+      filename: "mock_{{.InterfaceNameSnake}}.go"
+    interfaces:
+      Broadcaster: {}
+  github.com/manaraph/stream-aggregator/pkg/grpcapi:
+    config:
+      dir: "{{.InterfaceDir}}/mocks"
+      outpkg: mocks
+      filename: "mock_{{.InterfaceNameSnake}}.go"
+    interfaces:
+      Dispatcher: {}
+  github.com/manaraph/stream-aggregator/internal/services/generator:
+    config:
+      dir: "{{.InterfaceDir}}/mocks"
+      outpkg: mocks
+      filename: "mock_{{.InterfaceNameSnake}}.go"
+    interfaces:
+      MetricsStreamClient: {}
+  github.com/manaraph/stream-aggregator/internal/services/ingestion:
+    config:
+      dir: "{{.InterfaceDir}}/mocks"
+      outpkg: mocks
+      filename: "mock_{{.InterfaceNameSnake}}.go"
+    interfaces:
+      SensorStreamClient: {}
+      MetricsStreamClient: {}
+      sensorStore:
+        config:
+          dir: "{{.InterfaceDir}}"
+          outpkg: ingestion
+          filename: "mock_sensor_store_test.go"
+          inpackage: true

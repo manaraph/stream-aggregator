@@ -1,9 +1,10 @@
-package grpcapi
+package grpcapi_test
 
 import (
 	"net"
 	"testing"
 
+	"github.com/manaraph/stream-aggregator/pkg/grpcapi"
 	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 	"google.golang.org/grpc"
 )
@@ -15,11 +16,11 @@ func TestNewClient(t *testing.T) {
 	}
 
 	s := grpc.NewServer()
-	streamv1.RegisterSensorServiceServer(s, &Server{})
+	streamv1.RegisterSensorServiceServer(s, &grpcapi.Server{})
 	go s.Serve(lis)
 	defer s.Stop()
 
-	client, conn, err := NewClient(lis.Addr().String())
+	client, conn, err := grpcapi.NewClient(lis.Addr().String())
 	if err != nil {
 		t.Fatalf("NewClient failed: %v", err)
 	}
@@ -33,7 +34,7 @@ func TestNewClient(t *testing.T) {
 func TestConnectGatewayRequiresAddress(t *testing.T) {
 	t.Setenv("GATEWAY_ADDR", "")
 
-	client, conn, err := ConnectGateway()
+	client, conn, err := grpcapi.ConnectGateway()
 	if err == nil {
 		t.Fatal("expected an error when GATEWAY_ADDR is missing")
 	}

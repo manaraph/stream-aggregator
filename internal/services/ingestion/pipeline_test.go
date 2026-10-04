@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/manaraph/stream-aggregator/internal/domain"
+	ingestionmocks "github.com/manaraph/stream-aggregator/internal/services/ingestion/mocks"
 	"github.com/manaraph/stream-aggregator/pkg/broker"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -51,14 +52,14 @@ func (s *testBatchStore) callCount() int {
 }
 
 func TestProcessor_Flow(t *testing.T) {
-	mockStream := new(MockStream)
+	mockStream := ingestionmocks.NewMockSensorStreamClient(t)
 	p := &Processor{
 		B:     broker.NewFakeBroker(),
 		store: &testBatchStore{},
 		S:     mockStream,
 		wg:    sync.WaitGroup{},
 	}
-	mockStream.On("Send", mock.Anything).Return(nil)
+	mockStream.EXPECT().Send(mock.Anything).Return(nil)
 	t.Setenv("DB_BATCH_SIZE", "1")
 	t.Setenv("DB_BATCH_INTERVAL", "10ms")
 	p.ctx, p.cancel = context.WithCancel(context.Background())
@@ -101,8 +102,8 @@ func TestProcessor_TracksQueueHighWaterMark(t *testing.T) {
 
 func TestBatchWriterFlushesPartialBatchOnInterval(t *testing.T) {
 	store := &testBatchStore{}
-	stream := new(MockStream)
-	stream.On("Send", mock.Anything).Return(nil)
+	stream := ingestionmocks.NewMockSensorStreamClient(t)
+	stream.EXPECT().Send(mock.Anything).Return(nil)
 	ctx, cancel := context.WithCancel(context.Background())
 	p := &Processor{store: store, S: stream, ctx: ctx, cancel: cancel}
 	t.Setenv("DB_BATCH_SIZE", "10")
@@ -129,8 +130,8 @@ func TestBatchWriterFlushesPartialBatchOnInterval(t *testing.T) {
 
 func TestBatchWriterRetriesFailedBatch(t *testing.T) {
 	store := &testBatchStore{failures: 1}
-	stream := new(MockStream)
-	stream.On("Send", mock.Anything).Return(nil)
+	stream := ingestionmocks.NewMockSensorStreamClient(t)
+	stream.EXPECT().Send(mock.Anything).Return(nil)
 	ctx, cancel := context.WithCancel(context.Background())
 	p := &Processor{store: store, S: stream, ctx: ctx, cancel: cancel}
 	t.Setenv("DB_BATCH_SIZE", "1")
@@ -195,12 +196,12 @@ func TestProcessor_InitPipelineConfig(t *testing.T) {
 }
 
 func TestProcessor_ReportQueueStatusIncludesMetrics(t *testing.T) {
-	metricsStream := new(MockMetricsStream)
+	metricsStream := ingestionmocks.NewMockMetricsStreamClient(t)
 	p := &Processor{eventQueue: make(chan queuedReading, 2), M: metricsStream}
-	metricsStream.On("Send", mock.Anything).Return(nil).Once()
+	metricsStream.EXPECT().Send(mock.Anything).Return(nil).Once()
 	p.processed, p.dropped, p.maxUsed, p.grpcErrors = 3, 1, 2, 4
 	p.B = broker.NewFakeBroker()
-	p.S = new(MockStream)
+	p.S = ingestionmocks.NewMockSensorStreamClient(t)
 
 	assert.Equal(t, uint64(3), p.reportQueueStatus(1, 5*time.Second))
 	metricsStream.AssertExpectations(t)
