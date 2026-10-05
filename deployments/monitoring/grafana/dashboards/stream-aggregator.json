@@ -1,0 +1,20 @@
+{
+  "uid": "stream-aggregator",
+  "title": "Stream Aggregator",
+  "tags": ["stream-aggregator"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "5s",
+  "time": { "from": "now-15m", "to": "now" },
+  "panels": [
+    { "id": 1, "type": "timeseries", "title": "Event rates (events/sec)", "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 }, "targets": [ { "expr": "stream_aggregator_publish_rate_per_second", "legendFormat": "published" }, { "expr": "stream_aggregator_ingestion_rate_per_second", "legendFormat": "ingested" }, { "expr": "stream_aggregator_websocket_delivery_rate_per_second", "legendFormat": "WebSocket delivered" } ] },
+    { "id": 2, "type": "timeseries", "title": "Ingestion queue", "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 }, "targets": [ { "expr": "stream_aggregator_queue_used", "legendFormat": "used" }, { "expr": "stream_aggregator_queue_capacity", "legendFormat": "capacity" } ] },
+    { "id": 3, "type": "timeseries", "title": "Queue utilization (%)", "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 }, "targets": [ { "expr": "stream_aggregator_queue_utilization_percent", "legendFormat": "utilization" } ] },
+    { "id": 4, "type": "timeseries", "title": "Latency (ms)", "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 }, "targets": [ { "expr": "stream_aggregator_latency_average_milliseconds", "legendFormat": "average" }, { "expr": "stream_aggregator_latency_p95_milliseconds", "legendFormat": "p95" }, { "expr": "stream_aggregator_latency_max_milliseconds", "legendFormat": "max" } ] },
+    { "id": 5, "type": "timeseries", "title": "Dropped readings", "gridPos": { "h": 8, "w": 8, "x": 0, "y": 16 }, "targets": [ { "expr": "stream_aggregator_queue_dropped_total", "legendFormat": "dropped" } ] },
+    { "id": 6, "type": "stat", "title": "Broker connected", "gridPos": { "h": 4, "w": 4, "x": 8, "y": 16 }, "targets": [ { "expr": "stream_aggregator_broker_connected", "legendFormat": "connected" } ], "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } } },
+    { "id": 7, "type": "stat", "title": "gRPC connected", "gridPos": { "h": 4, "w": 4, "x": 12, "y": 16 }, "targets": [ { "expr": "stream_aggregator_grpc_connected", "legendFormat": "connected" } ], "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } } },
+    { "id": 8, "type": "timeseries", "title": "Gateway runtime", "gridPos": { "h": 8, "w": 8, "x": 16, "y": 16 }, "targets": [ { "expr": "stream_aggregator_memory_bytes", "legendFormat": "memory bytes" }, { "expr": "stream_aggregator_goroutines", "legendFormat": "goroutines" }, { "expr": "stream_aggregator_websocket_clients", "legendFormat": "WebSocket clients" } ] }
+  ]
+}

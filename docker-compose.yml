@@ -94,9 +94,42 @@ services:
     networks:
       - app-network
 
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    container_name: stream-aggregator-prometheus
+    ports:
+      - '9090:9090'
+    volumes:
+      - ./deployments/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - app-network
+    depends_on:
+      - gateway
+
+  grafana:
+    image: grafana/grafana:12.2.0
+    container_name: stream-aggregator-grafana
+    ports:
+      - '3000:3000'
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./deployments/monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./deployments/monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    networks:
+      - app-network
+    depends_on:
+      - prometheus
+
 networks:
   app-network:
     driver: bridge
 
 volumes:
   postgres_data:
+  prometheus_data:
+  grafana_data:

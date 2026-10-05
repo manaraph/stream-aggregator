@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/manaraph/stream-aggregator/pkg/grpcapi"
+	"github.com/manaraph/stream-aggregator/pkg/monitoring"
 	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 	"github.com/manaraph/stream-aggregator/pkg/ws"
 	"google.golang.org/grpc"
@@ -37,6 +38,7 @@ func NewGateway(grpcAddr, httpAddr string) (*Gateway, error) {
 
 	mux := http.NewServeMux()
 	hub.RegisterRoute(mux)
+	mux.Handle("/metrics", monitoring.Handler(dispatcher.MetricsSnapshot))
 	mux.HandleFunc("/health", func(w http.ResponseWriter, _ *http.Request) {
 		w.Write([]byte("ok"))
 	})

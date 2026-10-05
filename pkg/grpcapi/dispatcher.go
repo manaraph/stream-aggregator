@@ -53,3 +53,13 @@ func (d *WebSocketDispatcher) PublishMetrics(update *streamv1.IngestMetricsReque
 
 	d.Publish(events.NewMetricsMessage(snapshot))
 }
+
+// MetricsSnapshot returns a copy of the most recently merged metrics.
+func (d *WebSocketDispatcher) MetricsSnapshot() *streamv1.IngestMetricsRequest {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	if d.metrics == nil {
+		return nil
+	}
+	return proto.Clone(d.metrics).(*streamv1.IngestMetricsRequest)
+}

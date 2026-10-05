@@ -14,6 +14,8 @@ It contains five services managed using Docker Compose.
 
 The ingestion service flushes a batch when it reaches `DB_BATCH_SIZE` or when `DB_BATCH_INTERVAL` elapses. Defaults are 1,000 readings and 3 seconds. The bounded queue applies backpressure when PostgreSQL cannot keep up. MQTT uses QoS 1 and acknowledges valid readings only after the PostgreSQL transaction commits; duplicate deliveries are ignored by the event ID primary key. The broker also uses a persistent subscriber session and stores its own state under the mounted `mosquitto/data` directory.
 
+Prometheus and Grafana are included in Docker Compose. The gateway exposes the latest metrics snapshot from the generator and ingestion services, plus gateway runtime metrics, at `GET /metrics`. Prometheus scrapes that endpoint every five seconds, and Grafana provisions a Stream Aggregator dashboard automatically. Open Prometheus at `http://localhost:9090` and Grafana at `http://localhost:3000` (default local login: `admin` / `admin`; set `GRAFANA_ADMIN_USER` and `GRAFANA_ADMIN_PASSWORD` to change it). The WebSocket `/ws` feed remains available for application clients; Prometheus and Grafana provide monitoring independently of that feed.
+
 Readings include the event ID, sensor ID, measurement type, unit, value, event timestamp, and database receive timestamp. The initial schema is applied automatically when ingestion starts. Time-window aggregates are intentionally computed from the raw readings when needed.
 
 Example hourly average query:
