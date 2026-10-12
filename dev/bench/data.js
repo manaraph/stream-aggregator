@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791844310944,
+  "lastUpdate": 1791845333625,
   "repoUrl": "https://github.com/manaraph/stream-aggregator",
   "entries": {
     "Benchmark": [
@@ -648,6 +648,54 @@ window.BENCHMARK_DATA = {
             "value": 3,
             "unit": "allocs/op",
             "extra": "6518760 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "manaraph225@gmail.com",
+            "name": "Manasseh Omachonu",
+            "username": "manaraph"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9f7781dfee72368aff02dc3bc80fe41d3efed6f2",
+          "message": "Merge pull request #12 from manaraph/ft-monitoring\n\nAdd grafana and prometheus monitoring",
+          "timestamp": "2026-10-13T00:47:13+02:00",
+          "tree_id": "f0c50b1ea0c2444eae4f021104d4a8c6d56dc027",
+          "url": "https://github.com/manaraph/stream-aggregator/commit/9f7781dfee72368aff02dc3bc80fe41d3efed6f2"
+        },
+        "date": 1791845333041,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkHubBroadcast",
+            "value": 242.1,
+            "unit": "ns/op\t      40 B/op\t       3 allocs/op",
+            "extra": "5223279 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - ns/op",
+            "value": 242.1,
+            "unit": "ns/op",
+            "extra": "5223279 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - B/op",
+            "value": 40,
+            "unit": "B/op",
+            "extra": "5223279 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - allocs/op",
+            "value": 3,
+            "unit": "allocs/op",
+            "extra": "5223279 times\n4 procs"
           }
         ]
       }
