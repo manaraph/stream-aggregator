@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791119535322,
+  "lastUpdate": 1791844310944,
   "repoUrl": "https://github.com/manaraph/stream-aggregator",
   "entries": {
     "Benchmark": [
@@ -604,6 +604,50 @@ window.BENCHMARK_DATA = {
             "value": 3,
             "unit": "allocs/op",
             "extra": "4993095 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "manaraph",
+            "username": "manaraph"
+          },
+          "committer": {
+            "name": "manaraph",
+            "username": "manaraph"
+          },
+          "id": "c783da680e3a3afa2c97ea47bf4fef99c2734da1",
+          "message": "Add grafana and prometheus monitoring",
+          "timestamp": "2026-10-04T13:11:31Z",
+          "url": "https://github.com/manaraph/stream-aggregator/pull/12/commits/c783da680e3a3afa2c97ea47bf4fef99c2734da1"
+        },
+        "date": 1791844310326,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkHubBroadcast",
+            "value": 183.4,
+            "unit": "ns/op\t      40 B/op\t       3 allocs/op",
+            "extra": "6518760 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - ns/op",
+            "value": 183.4,
+            "unit": "ns/op",
+            "extra": "6518760 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - B/op",
+            "value": 40,
+            "unit": "B/op",
+            "extra": "6518760 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - allocs/op",
+            "value": 3,
+            "unit": "allocs/op",
+            "extra": "6518760 times\n4 procs"
           }
         ]
       }
