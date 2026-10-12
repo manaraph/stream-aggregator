@@ -25,6 +25,7 @@ type Stats struct {
 	Clients           uint32
 	BackpressureLevel uint32
 	Delivered         uint64
+	Dropped           uint64
 }
 
 func NewHub() *Hub {
@@ -55,6 +56,7 @@ func (h *Hub) Stats() Stats {
 		Clients:           atomic.LoadUint32(&h.clientCount),
 		BackpressureLevel: uint32(len(h.events)),
 		Delivered:         atomic.LoadUint64(&h.delivered),
+		Dropped:           atomic.LoadUint64(&h.dropped),
 	}
 }
 

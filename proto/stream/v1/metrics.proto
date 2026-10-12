@@ -15,6 +15,10 @@ message QueueMetrics {
   optional uint32 capacity = 4;
   optional uint32 max_used = 5;
   optional double utilization = 6;
+  optional double db_batch_duration_milliseconds = 7;
+  optional uint64 db_batch_failures = 8;
+  optional uint32 db_batch_size = 9;
+  optional uint64 db_rows_committed = 10;
 }
 
 message ThroughputMetrics {
@@ -42,6 +46,7 @@ message RuntimeMetrics {
   optional uint64 memory_bytes = 3;
   optional uint32 websocket_clients = 4;
   optional uint32 backpressure_level = 5;
+  optional uint64 websocket_dropped = 6;
 }
 
 message IngestMetricsRequest {

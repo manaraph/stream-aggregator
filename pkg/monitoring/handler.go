@@ -5,18 +5,25 @@ package monitoring
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 )
 
 type snapshotter func() *streamv1.IngestMetricsRequest
+type reportTimes func() map[string]time.Time
 
 // Handler serves the most recently received metrics snapshot. Missing values
 // are omitted until their owning service reports them.
-func Handler(snapshot snapshotter) http.Handler {
+func Handler(snapshot snapshotter, reports ...reportTimes) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "text/plain; version=0.0.4; charset=utf-8")
 		m := snapshot()
+		if len(reports) > 0 {
+			for service, reportedAt := range reports[0]() {
+				_, _ = fmt.Fprintf(w, "stream_aggregator_service_last_report_timestamp_seconds{service=%q} %f\n", service, float64(reportedAt.UnixNano())/float64(time.Second))
+			}
+		}
 		if m == nil {
 			return
 		}
@@ -30,6 +37,10 @@ func Handler(snapshot snapshotter) http.Handler {
 			write("queue_capacity", q.GetCapacity())
 			write("queue_high_water_mark", q.GetMaxUsed())
 			write("queue_utilization_percent", q.GetUtilization())
+			write("db_batch_duration_milliseconds", q.GetDbBatchDurationMilliseconds())
+			write("db_batch_failures_total", q.GetDbBatchFailures())
+			write("db_batch_size", q.GetDbBatchSize())
+			write("db_rows_committed_total", q.GetDbRowsCommitted())
 		}
 		if t := m.GetThroughput(); t != nil {
 			write("publish_rate_per_second", t.GetPublishRate())
@@ -58,6 +69,7 @@ func Handler(snapshot snapshotter) http.Handler {
 			write("memory_bytes", r.GetMemoryBytes())
 			write("websocket_clients", r.GetWebsocketClients())
 			write("backpressure_level", r.GetBackpressureLevel())
+			write("websocket_dropped_total", r.GetWebsocketDropped())
 		}
 	})
 }

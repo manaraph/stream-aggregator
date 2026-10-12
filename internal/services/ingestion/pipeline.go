@@ -81,9 +81,13 @@ func (p *Processor) batchWriter(maxBatch int, interval time.Duration) {
 		backoff := 100 * time.Millisecond
 		for {
 			ctx, cancel := context.WithTimeout(p.writerCtx, 10*time.Second)
+			started := time.Now()
 			err := p.store.InsertBatch(ctx, readings)
+			atomic.StoreUint64(&p.dbBatchDurationNS, uint64(time.Since(started)))
 			cancel()
 			if err == nil {
+				atomic.StoreUint32(&p.dbBatchSize, uint32(len(batch)))
+				atomic.AddUint64(&p.dbRowsCommitted, uint64(len(batch)))
 				for _, item := range batch {
 					p.ForwardEvent(item.reading)
 					item.message.Ack()
@@ -93,6 +97,7 @@ func (p *Processor) batchWriter(maxBatch int, interval time.Duration) {
 				batch = batch[:0]
 				return true
 			}
+			atomic.AddUint64(&p.dbBatchFailures, 1)
 			log.Printf("PostgreSQL batch write failed; retrying %d readings: %v", len(batch), err)
 			select {
 			case <-p.writerCtx.Done():
@@ -174,12 +179,16 @@ func (p *Processor) reportQueueStatus(previousProcessed uint64, interval time.Du
 
 	p.ForwardMetrics(&streamv1.IngestMetricsRequest{
 		Queue: &streamv1.QueueMetrics{
-			Processed:   proto.Uint64(processed),
-			Dropped:     proto.Uint64(dropped),
-			Used:        proto.Uint32(uint32(used)),
-			Capacity:    proto.Uint32(uint32(capacity)),
-			MaxUsed:     proto.Uint32(atomic.LoadUint32(&p.maxUsed)),
-			Utilization: proto.Float64(percent),
+			Processed:                   proto.Uint64(processed),
+			Dropped:                     proto.Uint64(dropped),
+			Used:                        proto.Uint32(uint32(used)),
+			Capacity:                    proto.Uint32(uint32(capacity)),
+			MaxUsed:                     proto.Uint32(atomic.LoadUint32(&p.maxUsed)),
+			Utilization:                 proto.Float64(percent),
+			DbBatchDurationMilliseconds: proto.Float64(float64(atomic.LoadUint64(&p.dbBatchDurationNS)) / float64(time.Millisecond)),
+			DbBatchFailures:             proto.Uint64(atomic.LoadUint64(&p.dbBatchFailures)),
+			DbBatchSize:                 proto.Uint32(atomic.LoadUint32(&p.dbBatchSize)),
+			DbRowsCommitted:             proto.Uint64(atomic.LoadUint64(&p.dbRowsCommitted)),
 		},
 		Throughput: &streamv1.ThroughputMetrics{IngestionRate: proto.Float64(rate)},
 		Grpc:       &streamv1.ConnectionMetrics{Connected: proto.Bool(p.S != nil && p.M != nil), Errors: proto.Uint32(atomic.LoadUint32(&p.grpcErrors))},
