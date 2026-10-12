@@ -32,6 +32,22 @@ func TestWebSocketDispatcherIgnoresNilMetricUpdates(t *testing.T) {
 	assert.Nil(t, dispatcher.metrics)
 }
 
+func TestWebSocketDispatcherReturnsMetricSnapshotAndReportTimes(t *testing.T) {
+	dispatcher := NewWebSocketDispatcher(ws.NewHub())
+	dispatcher.PublishMetrics(&streamv1.IngestMetricsRequest{
+		Queue: &streamv1.QueueMetrics{Processed: proto.Uint64(7)},
+	})
+
+	snapshot := dispatcher.MetricsSnapshot()
+	if snapshot == nil || snapshot.GetQueue().GetProcessed() != 7 {
+		t.Fatalf("unexpected metrics snapshot: %v", snapshot)
+	}
+
+	if got := dispatcher.LastReports(); len(got) != 1 || got["ingestion"].IsZero() {
+		t.Fatalf("unexpected report timestamps: %v", got)
+	}
+}
+
 func TestWebSocketDispatcherPublishesSnapshotAfterMerge(t *testing.T) {
 	dispatcher := NewWebSocketDispatcher(ws.NewHub())
 	dispatcher.PublishMetrics(&streamv1.IngestMetricsRequest{

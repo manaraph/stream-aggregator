@@ -109,12 +109,17 @@ func TestReportQueueStatusForwardsMetrics(t *testing.T) {
 
 	metricsStream.EXPECT().Send(&streamv1.IngestMetricsRequest{
 		Queue: &streamv1.QueueMetrics{
-			Processed:   proto.Uint64(9),
-			Dropped:     proto.Uint64(2),
-			Used:        proto.Uint32(2),
-			Capacity:    proto.Uint32(4),
-			MaxUsed:     proto.Uint32(0),
-			Utilization: proto.Float64(50),
+			Processed:                   proto.Uint64(9),
+			Dropped:                     proto.Uint64(2),
+			Used:                        proto.Uint32(2),
+			Capacity:                    proto.Uint32(4),
+			MaxUsed:                     proto.Uint32(0),
+			Utilization:                 proto.Float64(50),
+			DbBatchDurationMilliseconds: proto.Float64(0),
+			DbBatchFailures:             proto.Uint64(0),
+			DbBatchSize:                 proto.Uint32(0),
+			DbRowsCommitted:             proto.Uint64(0),
+			Received:                    proto.Uint64(0),
 		},
 		Throughput: &streamv1.ThroughputMetrics{IngestionRate: proto.Float64(1)},
 		Grpc:       &streamv1.ConnectionMetrics{Connected: proto.Bool(false), Errors: proto.Uint32(0)},

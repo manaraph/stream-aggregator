@@ -29,6 +29,13 @@ func TestNewMetricsMessageUsesCamelCaseJSON(t *testing.T) {
 	assert.False(t, strings.Contains(json, "websocket_rate"))
 }
 
+func TestNewSensorMessage(t *testing.T) {
+	sensor := &streamv1.IngestSensorRequest{Sensor: "sensor-a", Value: 12.5}
+	message := events.NewSensorMessage(sensor)
+	assert.Equal(t, "sensor", message.Type)
+	assert.Same(t, sensor, message.Data)
+}
+
 func TestNewMetricsMessageConvertsAllMetricSections(t *testing.T) {
 	message := events.NewMetricsMessage(&streamv1.IngestMetricsRequest{
 		Queue:      &streamv1.QueueMetrics{Processed: proto.Uint64(10), Dropped: proto.Uint64(2), Used: proto.Uint32(5), Capacity: proto.Uint32(8), MaxUsed: proto.Uint32(7), Utilization: proto.Float64(0.75)},
