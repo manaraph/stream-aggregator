@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/manaraph/stream-aggregator/internal/storage"
 	"github.com/manaraph/stream-aggregator/pkg/broker"
 	"github.com/manaraph/stream-aggregator/pkg/grpcapi"
@@ -14,11 +15,12 @@ import (
 )
 
 type processorFactories struct {
-	connectGateway func() (streamv1.SensorServiceClient, *grpc.ClientConn, error)
-	newBroker      func(string) (broker.Broker, error)
-	openSensor     func(streamv1.SensorServiceClient, context.Context) (SensorStreamClient, error)
-	openMetrics    func(*grpc.ClientConn, context.Context) (MetricsStreamClient, error)
-	openStore      func(context.Context, string) (sensorStore, error)
+	connectGateway       func() (streamv1.SensorServiceClient, *grpc.ClientConn, error)
+	newBroker            func(string) (broker.Broker, error)
+	newBrokerWithHandler func(string, mqtt.MessageHandler) (broker.Broker, error)
+	openSensor           func(streamv1.SensorServiceClient, context.Context) (SensorStreamClient, error)
+	openMetrics          func(*grpc.ClientConn, context.Context) (MetricsStreamClient, error)
+	openStore            func(context.Context, string) (sensorStore, error)
 }
 
 func defaultProcessorFactories() processorFactories {
@@ -26,6 +28,9 @@ func defaultProcessorFactories() processorFactories {
 		connectGateway: grpcapi.ConnectGateway,
 		newBroker: func(id string) (broker.Broker, error) {
 			return broker.NewMQTTClient(id)
+		},
+		newBrokerWithHandler: func(id string, handler mqtt.MessageHandler) (broker.Broker, error) {
+			return broker.NewMQTTClientWithDefaultHandler(id, handler)
 		},
 		openSensor: func(client streamv1.SensorServiceClient, ctx context.Context) (SensorStreamClient, error) {
 			return client.IngestSensor(ctx)
@@ -67,39 +72,46 @@ func newProcessor(
 		}
 	}
 
-	mclient, err := factories.newBroker(clientID)
-	if err != nil {
-		closeConn()
-		return nil, err
-	}
-	closeBroker := func() { _ = mclient.Close() }
-
 	stream, err := factories.openSensor(client, ctx)
 	if err != nil {
-		closeBroker()
 		closeConn()
 		return nil, fmt.Errorf("failed to open sensor gRPC stream: %w", err)
 	}
 
 	metricsStream, err := factories.openMetrics(conn, ctx)
 	if err != nil {
-		closeBroker()
 		closeConn()
 		return nil, fmt.Errorf("failed to open metrics gRPC stream: %w", err)
 	}
 
 	store, err := factories.openStore(ctx, databaseURL)
 	if err != nil {
-		closeBroker()
 		closeConn()
 		return nil, err
 	}
 
-	return &Processor{
-		B:     mclient,
-		store: store,
-		GRPC:  conn,
-		S:     stream,
-		M:     metricsStream,
-	}, nil
+	p := &Processor{
+		store:      store,
+		GRPC:       conn,
+		S:          stream,
+		M:          metricsStream,
+		ctx:        ctx,
+		eventQueue: make(chan queuedReading, positiveIntEnv("INGESTION_QUEUE_SIZE", defaultQueueSize)),
+	}
+
+	var mclient broker.Broker
+	if factories.newBrokerWithHandler != nil {
+		mclient, err = factories.newBrokerWithHandler(clientID, p.HandleMessage)
+	} else {
+		mclient, err = factories.newBroker(clientID)
+	}
+
+	if err != nil {
+		store.Close()
+		closeConn()
+		return nil, err
+	}
+
+	p.B = mclient
+	return p, nil
 }

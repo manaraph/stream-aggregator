@@ -10,6 +10,7 @@ import (
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/manaraph/stream-aggregator/internal/domain"
+	"github.com/manaraph/stream-aggregator/pkg/broker"
 	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 	"google.golang.org/protobuf/proto"
 )
@@ -25,7 +26,9 @@ func (p *Processor) initPipeline() {
 	queueSize := positiveIntEnv("INGESTION_QUEUE_SIZE", defaultQueueSize)
 	batchInterval := durationEnv("DB_BATCH_INTERVAL", defaultBatchInterval)
 
-	p.eventQueue = make(chan queuedReading, queueSize)
+	if p.eventQueue == nil {
+		p.eventQueue = make(chan queuedReading, queueSize)
+	}
 	if p.ctx == nil {
 		p.ctx = context.Background()
 	}
@@ -179,6 +182,7 @@ func (p *Processor) reportQueueStatus(previousProcessed uint64, interval time.Du
 
 	p.ForwardMetrics(&streamv1.IngestMetricsRequest{
 		Queue: &streamv1.QueueMetrics{
+			Received:                    proto.Uint64(atomic.LoadUint64(&p.received)),
 			Processed:                   proto.Uint64(processed),
 			Dropped:                     proto.Uint64(dropped),
 			Used:                        proto.Uint32(uint32(used)),
@@ -192,8 +196,18 @@ func (p *Processor) reportQueueStatus(previousProcessed uint64, interval time.Du
 		},
 		Throughput: &streamv1.ThroughputMetrics{IngestionRate: proto.Float64(rate)},
 		Grpc:       &streamv1.ConnectionMetrics{Connected: proto.Bool(p.S != nil && p.M != nil), Errors: proto.Uint32(atomic.LoadUint32(&p.grpcErrors))},
-		Broker:     &streamv1.ConnectionMetrics{Connected: proto.Bool(p.B != nil)},
+		Broker:     &streamv1.ConnectionMetrics{Connected: proto.Bool(brokerConnected(p.B))},
 	})
 
 	return processed
+}
+
+func brokerConnected(b broker.Broker) bool {
+	if b == nil {
+		return false
+	}
+	if status, ok := b.(interface{ Connected() bool }); ok {
+		return status.Connected()
+	}
+	return true
 }

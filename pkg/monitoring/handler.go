@@ -31,6 +31,7 @@ func Handler(snapshot snapshotter, reports ...reportTimes) http.Handler {
 			_, _ = fmt.Fprintf(w, "stream_aggregator_%s %v\n", name, value)
 		}
 		if q := m.GetQueue(); q != nil {
+			write("queue_received_total", q.GetReceived())
 			write("queue_processed_total", q.GetProcessed())
 			write("queue_dropped_total", q.GetDropped())
 			write("queue_used", q.GetUsed())

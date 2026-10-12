@@ -33,6 +33,10 @@
           "legendFormat": "ingested"
         },
         {
+          "expr": "rate(stream_aggregator_queue_received_total[5m])",
+          "legendFormat": "MQTT received"
+        },
+        {
           "expr": "stream_aggregator_websocket_delivery_rate_per_second",
           "legendFormat": "WebSocket delivered"
         }

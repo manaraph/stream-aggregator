@@ -33,6 +33,7 @@ type QueueMetrics struct {
 	DbBatchFailures             *uint64                `protobuf:"varint,8,opt,name=db_batch_failures,json=dbBatchFailures,proto3,oneof" json:"db_batch_failures,omitempty"`
 	DbBatchSize                 *uint32                `protobuf:"varint,9,opt,name=db_batch_size,json=dbBatchSize,proto3,oneof" json:"db_batch_size,omitempty"`
 	DbRowsCommitted             *uint64                `protobuf:"varint,10,opt,name=db_rows_committed,json=dbRowsCommitted,proto3,oneof" json:"db_rows_committed,omitempty"`
+	Received                    *uint64                `protobuf:"varint,11,opt,name=received,proto3,oneof" json:"received,omitempty"`
 	unknownFields               protoimpl.UnknownFields
 	sizeCache                   protoimpl.SizeCache
 }
@@ -133,6 +134,13 @@ func (x *QueueMetrics) GetDbBatchSize() uint32 {
 func (x *QueueMetrics) GetDbRowsCommitted() uint64 {
 	if x != nil && x.DbRowsCommitted != nil {
 		return *x.DbRowsCommitted
+	}
+	return 0
+}
+
+func (x *QueueMetrics) GetReceived() uint64 {
+	if x != nil && x.Received != nil {
+		return *x.Received
 	}
 	return 0
 }
@@ -533,7 +541,7 @@ var File_stream_v1_metrics_proto protoreflect.FileDescriptor
 
 const file_stream_v1_metrics_proto_rawDesc = "" +
 	"\n" +
-	"\x17stream/v1/metrics.proto\x12\tstream.v1\"\xd4\x04\n" +
+	"\x17stream/v1/metrics.proto\x12\tstream.v1\"\x82\x05\n" +
 	"\fQueueMetrics\x12!\n" +
 	"\tprocessed\x18\x01 \x01(\x04H\x00R\tprocessed\x88\x01\x01\x12\x1d\n" +
 	"\adropped\x18\x02 \x01(\x04H\x01R\adropped\x88\x01\x01\x12\x17\n" +
@@ -545,7 +553,9 @@ const file_stream_v1_metrics_proto_rawDesc = "" +
 	"\x11db_batch_failures\x18\b \x01(\x04H\aR\x0fdbBatchFailures\x88\x01\x01\x12'\n" +
 	"\rdb_batch_size\x18\t \x01(\rH\bR\vdbBatchSize\x88\x01\x01\x12/\n" +
 	"\x11db_rows_committed\x18\n" +
-	" \x01(\x04H\tR\x0fdbRowsCommitted\x88\x01\x01B\f\n" +
+	" \x01(\x04H\tR\x0fdbRowsCommitted\x88\x01\x01\x12\x1f\n" +
+	"\breceived\x18\v \x01(\x04H\n" +
+	"R\breceived\x88\x01\x01B\f\n" +
 	"\n" +
 	"_processedB\n" +
 	"\n" +
@@ -557,7 +567,8 @@ const file_stream_v1_metrics_proto_rawDesc = "" +
 	"\x1f_db_batch_duration_millisecondsB\x14\n" +
 	"\x12_db_batch_failuresB\x10\n" +
 	"\x0e_db_batch_sizeB\x14\n" +
-	"\x12_db_rows_committed\"\xfa\x01\n" +
+	"\x12_db_rows_committedB\v\n" +
+	"\t_received\"\xfa\x01\n" +
 	"\x11ThroughputMetrics\x12&\n" +
 	"\fpublish_rate\x18\x01 \x01(\x01H\x00R\vpublishRate\x88\x01\x01\x12*\n" +
 	"\x0eingestion_rate\x18\x02 \x01(\x01H\x01R\ringestionRate\x88\x01\x01\x12 \n" +
