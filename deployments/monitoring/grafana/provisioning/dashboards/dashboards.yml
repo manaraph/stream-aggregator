@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: Stream Aggregator
+    orgId: 1
+    folder: Stream Aggregator
+    type: file
+    disableDeletion: true
+    editable: true
+    options:
+      path: /var/lib/grafana/dashboards

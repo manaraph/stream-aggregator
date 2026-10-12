@@ -1,0 +1,624 @@
+{
+  "uid": "stream-aggregator",
+  "title": "Stream Aggregator",
+  "tags": [
+    "stream-aggregator"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "5s",
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Event rates (events/sec)",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "stream_aggregator_publish_rate_per_second",
+          "legendFormat": "published"
+        },
+        {
+          "expr": "stream_aggregator_ingestion_rate_per_second",
+          "legendFormat": "ingested"
+        },
+        {
+          "expr": "rate(stream_aggregator_queue_received_total[5m])",
+          "legendFormat": "MQTT received"
+        },
+        {
+          "expr": "stream_aggregator_websocket_delivery_rate_per_second",
+          "legendFormat": "WebSocket delivered"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "type": "timeseries",
+      "title": "Publish to ingestion gap",
+      "description": "Rates are instantaneous snapshots. Processed includes duplicate deliveries ignored by PostgreSQL.",
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "stream_aggregator_publish_rate_per_second",
+          "legendFormat": "published/sec"
+        },
+        {
+          "expr": "stream_aggregator_ingestion_rate_per_second",
+          "legendFormat": "processed/sec"
+        },
+        {
+          "expr": "clamp_min(stream_aggregator_publish_rate_per_second - stream_aggregator_ingestion_rate_per_second, 0)",
+          "legendFormat": "gap/sec"
+        },
+        {
+          "expr": "100 * clamp_min((stream_aggregator_publish_rate_per_second - stream_aggregator_ingestion_rate_per_second) / clamp_min(stream_aggregator_publish_rate_per_second, 0.001), 0)",
+          "legendFormat": "gap %"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Ingestion queue",
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "stream_aggregator_queue_used",
+          "legendFormat": "used"
+        },
+        {
+          "expr": "stream_aggregator_queue_capacity",
+          "legendFormat": "capacity"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Queue high-water mark",
+      "gridPos": {
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "stream_aggregator_queue_high_water_mark",
+          "legendFormat": "max queued"
+        },
+        {
+          "expr": "stream_aggregator_queue_capacity",
+          "legendFormat": "capacity"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Queue utilization (%)",
+      "gridPos": {
+        "x": 0,
+        "y": 16,
+        "w": 6,
+        "h": 5
+      },
+      "targets": [
+        {
+          "expr": "stream_aggregator_queue_utilization_percent",
+          "legendFormat": "utilization"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 70
+              },
+              {
+                "color": "red",
+                "value": 90
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "id": 15,
+      "type": "stat",
+      "title": "Database batch duration",
+      "gridPos": {
+        "x": 6,
+        "y": 16,
+        "w": 6,
+        "h": 5
+      },
+      "targets": [
+        {
+          "expr": "stream_aggregator_db_batch_duration_milliseconds",
+          "legendFormat": "batch duration (ms)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "id": 16,
+      "type": "stat",
+      "title": "WebSocket broadcast queue drops",
+      "description": "Cumulative messages dropped because the gateway broadcast queue was full.",
+      "gridPos": {
+        "x": 12,
+        "y": 16,
+        "w": 6,
+        "h": 5
+      },
+      "targets": [
+        {
+          "expr": "stream_aggregator_websocket_dropped_total",
+          "legendFormat": "dropped total"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "red"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "id": 19,
+      "type": "stat",
+      "title": "Database batch failures / retries",
+      "description": "Cumulative failed database batch attempts.",
+      "gridPos": {
+        "x": 18,
+        "y": 16,
+        "w": 6,
+        "h": 5
+      },
+      "targets": [
+        {
+          "expr": "stream_aggregator_db_batch_failures_total",
+          "legendFormat": "failed attempts"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "red"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Ingestion drops and processing",
+      "gridPos": {
+        "x": 0,
+        "y": 21,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "rate(stream_aggregator_queue_dropped_total[5m])",
+          "legendFormat": "dropped/sec"
+        },
+        {
+          "expr": "rate(stream_aggregator_queue_processed_total[5m])",
+          "legendFormat": "processed/sec"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "dropped/sec"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 18,
+      "type": "timeseries",
+      "title": "Database batch throughput",
+      "description": "Readings in successful transactions may include duplicate event IDs ignored by PostgreSQL.",
+      "gridPos": {
+        "x": 12,
+        "y": 21,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "stream_aggregator_db_batch_size",
+          "legendFormat": "last successful batch size"
+        },
+        {
+          "expr": "rate(stream_aggregator_db_rows_committed_total[5m])",
+          "legendFormat": "batch readings/sec"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "stat",
+      "title": "Broker connected",
+      "gridPos": {
+        "x": 0,
+        "y": 29,
+        "w": 6,
+        "h": 5
+      },
+      "targets": [
+        {
+          "expr": "stream_aggregator_broker_connected",
+          "legendFormat": "connected"
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "id": 8,
+      "type": "stat",
+      "title": "gRPC connected",
+      "gridPos": {
+        "x": 6,
+        "y": 29,
+        "w": 6,
+        "h": 5
+      },
+      "targets": [
+        {
+          "expr": "stream_aggregator_grpc_connected",
+          "legendFormat": "connected"
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "id": 12,
+      "type": "stat",
+      "title": "Connected WebSocket clients",
+      "gridPos": {
+        "x": 12,
+        "y": 29,
+        "w": 6,
+        "h": 5
+      },
+      "targets": [
+        {
+          "expr": "stream_aggregator_websocket_clients",
+          "legendFormat": "clients"
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "id": 17,
+      "type": "stat",
+      "title": "Service metric freshness (seconds ago)",
+      "description": "Age since the gateway last received each service metrics snapshot.",
+      "gridPos": {
+        "x": 18,
+        "y": 29,
+        "w": 6,
+        "h": 5
+      },
+      "targets": [
+        {
+          "expr": "time() - stream_aggregator_service_last_report_timestamp_seconds{service=\"generator\"}",
+          "legendFormat": "generator"
+        },
+        {
+          "expr": "time() - stream_aggregator_service_last_report_timestamp_seconds{service=\"ingestion\"}",
+          "legendFormat": "ingestion"
+        },
+        {
+          "expr": "time() - stream_aggregator_service_last_report_timestamp_seconds{service=\"gateway\"}",
+          "legendFormat": "gateway"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 10
+              },
+              {
+                "color": "red",
+                "value": 30
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "id": 10,
+      "type": "stat",
+      "title": "Broker and gRPC error counts",
+      "gridPos": {
+        "x": 0,
+        "y": 34,
+        "w": 6,
+        "h": 5
+      },
+      "targets": [
+        {
+          "expr": "stream_aggregator_broker_errors_total",
+          "legendFormat": "broker errors"
+        },
+        {
+          "expr": "stream_aggregator_grpc_errors_total",
+          "legendFormat": "gRPC errors"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "red"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "id": 11,
+      "type": "stat",
+      "title": "Broker and gRPC reconnect counts",
+      "gridPos": {
+        "x": 6,
+        "y": 34,
+        "w": 6,
+        "h": 5
+      },
+      "targets": [
+        {
+          "expr": "stream_aggregator_broker_reconnects_total",
+          "legendFormat": "broker reconnects"
+        },
+        {
+          "expr": "stream_aggregator_grpc_reconnects_total",
+          "legendFormat": "gRPC reconnects"
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "id": 9,
+      "type": "stat",
+      "title": "Memory (MiB)",
+      "gridPos": {
+        "x": 12,
+        "y": 34,
+        "w": 6,
+        "h": 5
+      },
+      "targets": [
+        {
+          "expr": "stream_aggregator_memory_bytes / 1024 / 1024",
+          "legendFormat": "MiB"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "MiB"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "id": 13,
+      "type": "stat",
+      "title": "Gateway goroutines",
+      "gridPos": {
+        "x": 18,
+        "y": 34,
+        "w": 6,
+        "h": 5
+      },
+      "targets": [
+        {
+          "expr": "stream_aggregator_goroutines",
+          "legendFormat": "goroutines"
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    }
+  ]
+}

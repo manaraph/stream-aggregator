@@ -85,7 +85,11 @@ func TestNewProcessorFactoryFailuresCleanUp(t *testing.T) {
 				t.Fatal(err)
 			}
 			b := broker.NewFakeBroker()
-			f := factorySet(conn, b, NewMockSensorStore(t))
+			store := NewMockSensorStore(t)
+			if tt.name == "broker" {
+				store.EXPECT().Close().Once()
+			}
+			f := factorySet(conn, b, store)
 			tt.configure(&f)
 			p, err := newProcessor(context.Background(), "test-ingestor", "", f)
 			if p != nil || err == nil || !strings.Contains(err.Error(), tt.wantError) {

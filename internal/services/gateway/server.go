@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/manaraph/stream-aggregator/pkg/grpcapi"
+	"github.com/manaraph/stream-aggregator/pkg/monitoring"
 	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 	"github.com/manaraph/stream-aggregator/pkg/ws"
 	"google.golang.org/grpc"
@@ -37,6 +38,7 @@ func NewGateway(grpcAddr, httpAddr string) (*Gateway, error) {
 
 	mux := http.NewServeMux()
 	hub.RegisterRoute(mux)
+	mux.Handle("/metrics", monitoring.Handler(dispatcher.MetricsSnapshot, dispatcher.LastReports))
 	mux.HandleFunc("/health", func(w http.ResponseWriter, _ *http.Request) {
 		w.Write([]byte("ok"))
 	})
@@ -68,6 +70,7 @@ func publishMetricsWithTicker(hub *ws.Hub, dispatcher grpcapi.Dispatcher, tick <
 				MemoryBytes:       proto.Uint64(allocatedMemory()),
 				WebsocketClients:  proto.Uint32(stats.Clients),
 				BackpressureLevel: proto.Uint32(stats.BackpressureLevel),
+				WebsocketDropped:  proto.Uint64(stats.Dropped),
 			},
 		})
 		previousDelivered = delivered

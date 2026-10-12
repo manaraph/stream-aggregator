@@ -22,15 +22,20 @@ const (
 )
 
 type QueueMetrics struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Processed     *uint64                `protobuf:"varint,1,opt,name=processed,proto3,oneof" json:"processed,omitempty"`
-	Dropped       *uint64                `protobuf:"varint,2,opt,name=dropped,proto3,oneof" json:"dropped,omitempty"`
-	Used          *uint32                `protobuf:"varint,3,opt,name=used,proto3,oneof" json:"used,omitempty"`
-	Capacity      *uint32                `protobuf:"varint,4,opt,name=capacity,proto3,oneof" json:"capacity,omitempty"`
-	MaxUsed       *uint32                `protobuf:"varint,5,opt,name=max_used,json=maxUsed,proto3,oneof" json:"max_used,omitempty"`
-	Utilization   *float64               `protobuf:"fixed64,6,opt,name=utilization,proto3,oneof" json:"utilization,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state                       protoimpl.MessageState `protogen:"open.v1"`
+	Processed                   *uint64                `protobuf:"varint,1,opt,name=processed,proto3,oneof" json:"processed,omitempty"`
+	Dropped                     *uint64                `protobuf:"varint,2,opt,name=dropped,proto3,oneof" json:"dropped,omitempty"`
+	Used                        *uint32                `protobuf:"varint,3,opt,name=used,proto3,oneof" json:"used,omitempty"`
+	Capacity                    *uint32                `protobuf:"varint,4,opt,name=capacity,proto3,oneof" json:"capacity,omitempty"`
+	MaxUsed                     *uint32                `protobuf:"varint,5,opt,name=max_used,json=maxUsed,proto3,oneof" json:"max_used,omitempty"`
+	Utilization                 *float64               `protobuf:"fixed64,6,opt,name=utilization,proto3,oneof" json:"utilization,omitempty"`
+	DbBatchDurationMilliseconds *float64               `protobuf:"fixed64,7,opt,name=db_batch_duration_milliseconds,json=dbBatchDurationMilliseconds,proto3,oneof" json:"db_batch_duration_milliseconds,omitempty"`
+	DbBatchFailures             *uint64                `protobuf:"varint,8,opt,name=db_batch_failures,json=dbBatchFailures,proto3,oneof" json:"db_batch_failures,omitempty"`
+	DbBatchSize                 *uint32                `protobuf:"varint,9,opt,name=db_batch_size,json=dbBatchSize,proto3,oneof" json:"db_batch_size,omitempty"`
+	DbRowsCommitted             *uint64                `protobuf:"varint,10,opt,name=db_rows_committed,json=dbRowsCommitted,proto3,oneof" json:"db_rows_committed,omitempty"`
+	Received                    *uint64                `protobuf:"varint,11,opt,name=received,proto3,oneof" json:"received,omitempty"`
+	unknownFields               protoimpl.UnknownFields
+	sizeCache                   protoimpl.SizeCache
 }
 
 func (x *QueueMetrics) Reset() {
@@ -101,6 +106,41 @@ func (x *QueueMetrics) GetMaxUsed() uint32 {
 func (x *QueueMetrics) GetUtilization() float64 {
 	if x != nil && x.Utilization != nil {
 		return *x.Utilization
+	}
+	return 0
+}
+
+func (x *QueueMetrics) GetDbBatchDurationMilliseconds() float64 {
+	if x != nil && x.DbBatchDurationMilliseconds != nil {
+		return *x.DbBatchDurationMilliseconds
+	}
+	return 0
+}
+
+func (x *QueueMetrics) GetDbBatchFailures() uint64 {
+	if x != nil && x.DbBatchFailures != nil {
+		return *x.DbBatchFailures
+	}
+	return 0
+}
+
+func (x *QueueMetrics) GetDbBatchSize() uint32 {
+	if x != nil && x.DbBatchSize != nil {
+		return *x.DbBatchSize
+	}
+	return 0
+}
+
+func (x *QueueMetrics) GetDbRowsCommitted() uint64 {
+	if x != nil && x.DbRowsCommitted != nil {
+		return *x.DbRowsCommitted
+	}
+	return 0
+}
+
+func (x *QueueMetrics) GetReceived() uint64 {
+	if x != nil && x.Received != nil {
+		return *x.Received
 	}
 	return 0
 }
@@ -300,6 +340,7 @@ type RuntimeMetrics struct {
 	MemoryBytes       *uint64                `protobuf:"varint,3,opt,name=memory_bytes,json=memoryBytes,proto3,oneof" json:"memory_bytes,omitempty"`
 	WebsocketClients  *uint32                `protobuf:"varint,4,opt,name=websocket_clients,json=websocketClients,proto3,oneof" json:"websocket_clients,omitempty"`
 	BackpressureLevel *uint32                `protobuf:"varint,5,opt,name=backpressure_level,json=backpressureLevel,proto3,oneof" json:"backpressure_level,omitempty"`
+	WebsocketDropped  *uint64                `protobuf:"varint,6,opt,name=websocket_dropped,json=websocketDropped,proto3,oneof" json:"websocket_dropped,omitempty"`
 	unknownFields     protoimpl.UnknownFields
 	sizeCache         protoimpl.SizeCache
 }
@@ -365,6 +406,13 @@ func (x *RuntimeMetrics) GetWebsocketClients() uint32 {
 func (x *RuntimeMetrics) GetBackpressureLevel() uint32 {
 	if x != nil && x.BackpressureLevel != nil {
 		return *x.BackpressureLevel
+	}
+	return 0
+}
+
+func (x *RuntimeMetrics) GetWebsocketDropped() uint64 {
+	if x != nil && x.WebsocketDropped != nil {
+		return *x.WebsocketDropped
 	}
 	return 0
 }
@@ -493,14 +541,21 @@ var File_stream_v1_metrics_proto protoreflect.FileDescriptor
 
 const file_stream_v1_metrics_proto_rawDesc = "" +
 	"\n" +
-	"\x17stream/v1/metrics.proto\x12\tstream.v1\"\x9e\x02\n" +
+	"\x17stream/v1/metrics.proto\x12\tstream.v1\"\x82\x05\n" +
 	"\fQueueMetrics\x12!\n" +
 	"\tprocessed\x18\x01 \x01(\x04H\x00R\tprocessed\x88\x01\x01\x12\x1d\n" +
 	"\adropped\x18\x02 \x01(\x04H\x01R\adropped\x88\x01\x01\x12\x17\n" +
 	"\x04used\x18\x03 \x01(\rH\x02R\x04used\x88\x01\x01\x12\x1f\n" +
 	"\bcapacity\x18\x04 \x01(\rH\x03R\bcapacity\x88\x01\x01\x12\x1e\n" +
 	"\bmax_used\x18\x05 \x01(\rH\x04R\amaxUsed\x88\x01\x01\x12%\n" +
-	"\vutilization\x18\x06 \x01(\x01H\x05R\vutilization\x88\x01\x01B\f\n" +
+	"\vutilization\x18\x06 \x01(\x01H\x05R\vutilization\x88\x01\x01\x12H\n" +
+	"\x1edb_batch_duration_milliseconds\x18\a \x01(\x01H\x06R\x1bdbBatchDurationMilliseconds\x88\x01\x01\x12/\n" +
+	"\x11db_batch_failures\x18\b \x01(\x04H\aR\x0fdbBatchFailures\x88\x01\x01\x12'\n" +
+	"\rdb_batch_size\x18\t \x01(\rH\bR\vdbBatchSize\x88\x01\x01\x12/\n" +
+	"\x11db_rows_committed\x18\n" +
+	" \x01(\x04H\tR\x0fdbRowsCommitted\x88\x01\x01\x12\x1f\n" +
+	"\breceived\x18\v \x01(\x04H\n" +
+	"R\breceived\x88\x01\x01B\f\n" +
 	"\n" +
 	"_processedB\n" +
 	"\n" +
@@ -508,7 +563,12 @@ const file_stream_v1_metrics_proto_rawDesc = "" +
 	"\x05_usedB\v\n" +
 	"\t_capacityB\v\n" +
 	"\t_max_usedB\x0e\n" +
-	"\f_utilization\"\xfa\x01\n" +
+	"\f_utilizationB!\n" +
+	"\x1f_db_batch_duration_millisecondsB\x14\n" +
+	"\x12_db_batch_failuresB\x10\n" +
+	"\x0e_db_batch_sizeB\x14\n" +
+	"\x12_db_rows_committedB\v\n" +
+	"\t_received\"\xfa\x01\n" +
 	"\x11ThroughputMetrics\x12&\n" +
 	"\fpublish_rate\x18\x01 \x01(\x01H\x00R\vpublishRate\x88\x01\x01\x12*\n" +
 	"\x0eingestion_rate\x18\x02 \x01(\x01H\x01R\ringestionRate\x88\x01\x01\x12 \n" +
@@ -536,7 +596,7 @@ const file_stream_v1_metrics_proto_rawDesc = "" +
 	"\n" +
 	"_connectedB\r\n" +
 	"\v_reconnectsB\t\n" +
-	"\a_errors\"\xcf\x02\n" +
+	"\a_errors\"\x97\x03\n" +
 	"\x0eRuntimeMetrics\x12*\n" +
 	"\x0euptime_seconds\x18\x01 \x01(\x04H\x00R\ruptimeSeconds\x88\x01\x01\x12#\n" +
 	"\n" +
@@ -544,12 +604,14 @@ const file_stream_v1_metrics_proto_rawDesc = "" +
 	"goroutines\x88\x01\x01\x12&\n" +
 	"\fmemory_bytes\x18\x03 \x01(\x04H\x02R\vmemoryBytes\x88\x01\x01\x120\n" +
 	"\x11websocket_clients\x18\x04 \x01(\rH\x03R\x10websocketClients\x88\x01\x01\x122\n" +
-	"\x12backpressure_level\x18\x05 \x01(\rH\x04R\x11backpressureLevel\x88\x01\x01B\x11\n" +
+	"\x12backpressure_level\x18\x05 \x01(\rH\x04R\x11backpressureLevel\x88\x01\x01\x120\n" +
+	"\x11websocket_dropped\x18\x06 \x01(\x04H\x05R\x10websocketDropped\x88\x01\x01B\x11\n" +
 	"\x0f_uptime_secondsB\r\n" +
 	"\v_goroutinesB\x0f\n" +
 	"\r_memory_bytesB\x14\n" +
 	"\x12_websocket_clientsB\x15\n" +
-	"\x13_backpressure_level\"\xd5\x02\n" +
+	"\x13_backpressure_levelB\x14\n" +
+	"\x12_websocket_dropped\"\xd5\x02\n" +
 	"\x14IngestMetricsRequest\x12-\n" +
 	"\x05queue\x18\x01 \x01(\v2\x17.stream.v1.QueueMetricsR\x05queue\x12<\n" +
 	"\n" +

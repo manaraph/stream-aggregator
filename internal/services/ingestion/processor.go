@@ -32,24 +32,29 @@ type sensorStore interface {
 }
 
 type Processor struct {
-	B          broker.Broker
-	store      sensorStore
-	GRPC       *grpc.ClientConn
-	S          SensorStreamClient
-	M          MetricsStreamClient
-	eventQueue chan queuedReading
-	processed  uint64
-	dropped    uint64
-	maxUsed    uint32
-	grpcErrors uint32
-	wg         sync.WaitGroup
-	callbackWG sync.WaitGroup
-	callbackMu sync.RWMutex
-	closing    bool
-	cancel     context.CancelFunc
-	ctx        context.Context
-	writerCtx  context.Context
-	writerStop context.CancelFunc
+	B                 broker.Broker
+	store             sensorStore
+	GRPC              *grpc.ClientConn
+	S                 SensorStreamClient
+	M                 MetricsStreamClient
+	eventQueue        chan queuedReading
+	processed         uint64
+	received          uint64
+	dropped           uint64
+	maxUsed           uint32
+	grpcErrors        uint32
+	dbBatchDurationNS uint64
+	dbBatchFailures   uint64
+	dbBatchSize       uint32
+	dbRowsCommitted   uint64
+	wg                sync.WaitGroup
+	callbackWG        sync.WaitGroup
+	callbackMu        sync.RWMutex
+	closing           bool
+	cancel            context.CancelFunc
+	ctx               context.Context
+	writerCtx         context.Context
+	writerStop        context.CancelFunc
 }
 
 type queuedReading struct {
@@ -61,7 +66,11 @@ func (p *Processor) Run(ctx context.Context) error {
 	p.ctx, p.cancel = context.WithCancel(ctx)
 
 	p.initPipeline()
-	return p.B.Subscribe("sensors/#", p.HandleMessage)
+	if err := p.B.Subscribe("sensors/#", p.HandleMessage); err != nil {
+		return fmt.Errorf("subscribe to sensors/#: %w", err)
+	}
+	log.Println("Subscribed to MQTT topic sensors/#")
+	return nil
 }
 
 func (p *Processor) HandleMessage(c mqtt.Client, m mqtt.Message) {
@@ -73,6 +82,10 @@ func (p *Processor) HandleMessage(c mqtt.Client, m mqtt.Message) {
 	p.callbackWG.Add(1)
 	p.callbackMu.RUnlock()
 	defer p.callbackWG.Done()
+	received := atomic.AddUint64(&p.received, 1)
+	if received == 1 {
+		log.Printf("Received first MQTT message on topic %s", m.Topic())
+	}
 
 	var e domain.Sensor
 	if err := json.Unmarshal(m.Payload(), &e); err != nil {

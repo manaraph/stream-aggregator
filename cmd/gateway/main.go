@@ -18,7 +18,10 @@ func main() {
 		log.Fatalf("HTTP_PORT not defined")
 	}
 
-	_, _ = gateway.NewGateway(grpcPort, httpPort)
+	if _, err := gateway.NewGateway(grpcPort, httpPort); err != nil {
+		log.Fatalf("failed to start gateway: %v", err)
+	}
+
 	log.Println("gRPC streaming on", grpcPort)
 	log.Println("HTTP on", httpPort)
 
