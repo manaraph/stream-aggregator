@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791916487485,
+  "lastUpdate": 1791916730769,
   "repoUrl": "https://github.com/manaraph/stream-aggregator",
   "entries": {
     "Benchmark": [
@@ -740,6 +740,54 @@ window.BENCHMARK_DATA = {
             "value": 3,
             "unit": "allocs/op",
             "extra": "3965035 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "manaraph225@gmail.com",
+            "name": "Manasseh Omachonu",
+            "username": "manaraph"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "d86ec9c3f3e832054f36198f953ead5e118c03d8",
+          "message": "Merge pull request #13 from manaraph/ft-monitoring\n\nImplement alert rules and alerting with alert manager",
+          "timestamp": "2026-10-13T20:38:06+02:00",
+          "tree_id": "731f4cb55bfaf9a60339187eb72338d756ebf637",
+          "url": "https://github.com/manaraph/stream-aggregator/commit/d86ec9c3f3e832054f36198f953ead5e118c03d8"
+        },
+        "date": 1791916730225,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkHubBroadcast",
+            "value": 247.9,
+            "unit": "ns/op\t      40 B/op\t       3 allocs/op",
+            "extra": "4858718 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - ns/op",
+            "value": 247.9,
+            "unit": "ns/op",
+            "extra": "4858718 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - B/op",
+            "value": 40,
+            "unit": "B/op",
+            "extra": "4858718 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - allocs/op",
+            "value": 3,
+            "unit": "allocs/op",
+            "extra": "4858718 times\n4 procs"
           }
         ]
       }
