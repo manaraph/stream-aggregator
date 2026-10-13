@@ -16,6 +16,10 @@ The ingestion service flushes a batch when it reaches `DB_BATCH_SIZE` or when `D
 
 Prometheus and Grafana are included in Docker Compose. The gateway exposes the latest metrics snapshot from the generator and ingestion services, plus gateway runtime metrics, at `GET /metrics`. Prometheus scrapes that endpoint every five seconds, and Grafana provisions a Stream Aggregator dashboard automatically. Open Prometheus at `http://localhost:9090` and Grafana at `http://localhost:3000` (default local login: `admin` / `admin`; set `GRAFANA_ADMIN_USER` and `GRAFANA_ADMIN_PASSWORD` to change it). The WebSocket `/ws` feed remains available for application clients; Prometheus and Grafana provide monitoring independently of that feed.
 
+Prometheus evaluates the rules in `deployments/monitoring/alerting/stream-aggregator.rules.yml` and sends firing and resolved alerts to Alertmanager. The rules cover gateway availability, missing or stale ingestion reports, stalled ingestion, queue pressure, database write failures, and dropped events. Alertmanager sends local development email through Mailpit; open `http://localhost:8025` to inspect notifications. Alertmanager's status and active alerts are at `http://localhost:9093`.
+
+To send alerts to a real email address, set `ALERT_SMTP_HOST`, `ALERT_SMTP_FROM`, `ALERT_SMTP_TO`, `ALERT_SMTP_USERNAME`, and `ALERT_SMTP_REQUIRE_TLS` in `.env` to your provider's values. Store the SMTP password in a local file at `deployments/monitoring/smtp_password` and set `ALERT_SMTP_PASSWORD_FILE=./deployments/monitoring/smtp_password`. That file is gitignored and mounted into Alertmanager as a Docker secret. The defaults keep Mailpit active for local use. Restart Alertmanager after changing these settings with `docker compose up -d --force-recreate alertmanager`.
+
 Readings include the event ID, sensor ID, measurement type, unit, value, event timestamp, and database receive timestamp. The initial schema is applied automatically when ingestion starts. Time-window aggregates are intentionally computed from the raw readings when needed.
 
 Example hourly average query:
