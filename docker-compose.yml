@@ -101,11 +101,45 @@ services:
       - '9090:9090'
     volumes:
       - ./deployments/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./deployments/monitoring/alerting:/etc/prometheus/alerting:ro
       - prometheus_data:/prometheus
     networks:
       - app-network
     depends_on:
       - gateway
+      - alertmanager
+
+  alertmanager:
+    image: prom/alertmanager:v0.34.1
+    container_name: stream-aggregator-alertmanager
+    ports:
+      - '9093:9093'
+    environment:
+      ALERT_SMTP_HOST: ${ALERT_SMTP_HOST:-mailpit:1025}
+      ALERT_SMTP_FROM: ${ALERT_SMTP_FROM:-stream-aggregator@localhost}
+      ALERT_SMTP_TO: ${ALERT_SMTP_TO:-alerts@localhost}
+      ALERT_SMTP_USERNAME: ${ALERT_SMTP_USERNAME:-}
+      ALERT_SMTP_REQUIRE_TLS: ${ALERT_SMTP_REQUIRE_TLS:-false}
+    volumes:
+      - ./deployments/monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.yml.tmpl:ro
+      - ./deployments/monitoring/render-alertmanager-config.sh:/usr/local/bin/render-alertmanager-config:ro
+    secrets:
+      - smtp_password
+    entrypoint: ['/bin/sh']
+    command:
+      - '/usr/local/bin/render-alertmanager-config'
+    networks:
+      - app-network
+    depends_on:
+      - mailpit
+
+  mailpit:
+    image: axllent/mailpit:v1.31.4
+    container_name: stream-aggregator-mailpit
+    ports:
+      - '8025:8025'
+    networks:
+      - app-network
 
   grafana:
     image: grafana/grafana:12.2.0
@@ -133,3 +167,7 @@ volumes:
   postgres_data:
   prometheus_data:
   grafana_data:
+
+secrets:
+  smtp_password:
+    file: ${ALERT_SMTP_PASSWORD_FILE:-./deployments/monitoring/smtp_password.empty}

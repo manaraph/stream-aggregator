@@ -1,0 +1,71 @@
+groups:
+  - name: stream-aggregator
+    rules:
+      - alert: GatewayMetricsUnavailable
+        expr: up{job="stream-aggregator-gateway"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: Stream Aggregator metrics endpoint is unavailable
+          description: Prometheus has been unable to scrape the gateway metrics endpoint for at least one minute.
+
+      - alert: IngestionMetricsMissing
+        expr: absent(stream_aggregator_service_last_report_timestamp_seconds{service="ingestion"})
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: Ingestion service metrics are missing
+          description: The gateway has not reported an ingestion service metrics timestamp.
+
+      - alert: IngestionMetricsStale
+        expr: time() - stream_aggregator_service_last_report_timestamp_seconds{service="ingestion"} > 30
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: Ingestion service metrics are stale
+          description: The ingestion service has not updated its metrics report for more than 30 seconds.
+
+      - alert: IngestionStalled
+        expr: stream_aggregator_publish_rate_per_second > 0 and stream_aggregator_ingestion_rate_per_second == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: Events are being published but ingestion is stalled
+          description: Publish rate is positive while ingestion rate has remained zero for two minutes.
+
+      - alert: QueueNearCapacity
+        expr: stream_aggregator_queue_utilization_percent >= 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Ingestion queue is near capacity
+          description: Queue utilization has been at or above 80% for five minutes.
+
+      - alert: DatabaseBatchFailures
+        expr: increase(stream_aggregator_db_batch_failures_total[5m]) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: Database batch writes are failing
+          description: At least one database batch failure occurred in the last five minutes.
+
+      - alert: EventsDropped
+        expr: increase(stream_aggregator_queue_dropped_total[5m]) > 0
+        labels:
+          severity: critical
+        annotations:
+          summary: Ingestion queue dropped events
+          description: The ingestion queue dropped one or more events in the last five minutes.
+
+      - alert: WebSocketDeliveryDrops
+        expr: increase(stream_aggregator_websocket_dropped_total[5m]) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: WebSocket clients are missing events
+          description: One or more WebSocket deliveries were dropped in the last five minutes.

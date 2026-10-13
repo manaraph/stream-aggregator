@@ -1,0 +1,19 @@
+global:
+  smtp_smarthost: "__SMTP_HOST__"
+  smtp_from: "__SMTP_FROM__"
+  smtp_auth_username: "__SMTP_USERNAME__"
+  smtp_auth_password_file: /run/secrets/smtp_password
+  smtp_require_tls: __SMTP_REQUIRE_TLS__
+
+route:
+  receiver: local-email
+  group_by: [alertname, severity]
+  group_wait: 10s
+  group_interval: 1m
+  repeat_interval: 4h
+
+receivers:
+  - name: local-email
+    email_configs:
+      - to: __SMTP_TO__
+        send_resolved: true

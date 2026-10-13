@@ -26,6 +26,7 @@ go.work.sum
 
 # env file
 .env
+deployments/monitoring/smtp_password*
 
 # Editor/IDE
 # .idea/
