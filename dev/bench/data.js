@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791845333625,
+  "lastUpdate": 1791916487485,
   "repoUrl": "https://github.com/manaraph/stream-aggregator",
   "entries": {
     "Benchmark": [
@@ -696,6 +696,50 @@ window.BENCHMARK_DATA = {
             "value": 3,
             "unit": "allocs/op",
             "extra": "5223279 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "manaraph",
+            "username": "manaraph"
+          },
+          "committer": {
+            "name": "manaraph",
+            "username": "manaraph"
+          },
+          "id": "98c2d309b1e4da9422f515a869a1009cc49bca01",
+          "message": "Implement alert rules and alerting with alert manager",
+          "timestamp": "2026-10-12T22:47:19Z",
+          "url": "https://github.com/manaraph/stream-aggregator/pull/13/commits/98c2d309b1e4da9422f515a869a1009cc49bca01"
+        },
+        "date": 1791916486853,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkHubBroadcast",
+            "value": 310.5,
+            "unit": "ns/op\t      40 B/op\t       3 allocs/op",
+            "extra": "3965035 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - ns/op",
+            "value": 310.5,
+            "unit": "ns/op",
+            "extra": "3965035 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - B/op",
+            "value": 40,
+            "unit": "B/op",
+            "extra": "3965035 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - allocs/op",
+            "value": 3,
+            "unit": "allocs/op",
+            "extra": "3965035 times\n4 procs"
           }
         ]
       }
