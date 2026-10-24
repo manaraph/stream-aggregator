@@ -44,7 +44,6 @@ func (c *Client) readPump() {
 }
 
 func (c *Client) writePump() {
-
 	ticker := time.NewTicker(50 * time.Second)
 
 	defer func() {
@@ -53,7 +52,6 @@ func (c *Client) writePump() {
 	}()
 
 	for {
-
 		select {
 
 		case msg, ok := <-c.send:
@@ -78,6 +76,5 @@ func (c *Client) writePump() {
 			}
 
 		}
-
 	}
 }

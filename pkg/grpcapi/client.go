@@ -4,9 +4,10 @@ import (
 	"errors"
 	"os"
 
-	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+
+	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 )
 
 func NewClient(addr string) (streamv1.SensorServiceClient, *grpc.ClientConn, error) {

@@ -3,10 +3,11 @@ package grpcapi
 import (
 	"testing"
 
-	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
-	"github.com/manaraph/stream-aggregator/pkg/ws"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/proto"
+
+	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
+	"github.com/manaraph/stream-aggregator/pkg/ws"
 )
 
 func TestWebSocketDispatcherMergesPartialMetricUpdates(t *testing.T) {

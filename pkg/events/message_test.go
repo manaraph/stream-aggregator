@@ -5,10 +5,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/manaraph/stream-aggregator/pkg/events"
-	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/proto"
+
+	"github.com/manaraph/stream-aggregator/pkg/events"
+	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 )
 
 func TestNewMetricsMessageUsesCamelCaseJSON(t *testing.T) {

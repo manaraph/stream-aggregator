@@ -9,10 +9,11 @@ import (
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"google.golang.org/protobuf/proto"
+
 	"github.com/manaraph/stream-aggregator/internal/domain"
 	"github.com/manaraph/stream-aggregator/pkg/broker"
 	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
-	"google.golang.org/protobuf/proto"
 )
 
 const (

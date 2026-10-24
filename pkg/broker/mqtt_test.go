@@ -33,6 +33,7 @@ func (m *MockClient) Disconnect(quiesce uint) { m.Called(quiesce) }
 func (m *MockClient) Publish(topic string, qos byte, retained bool, payload interface{}) mqtt.Token {
 	return m.Called(topic, qos, retained, payload).Get(0).(mqtt.Token)
 }
+
 func (m *MockClient) Subscribe(topic string, qos byte, callback mqtt.MessageHandler) mqtt.Token {
 	args := m.Called(topic, qos, mock.Anything)
 	return args.Get(0).(mqtt.Token)
@@ -107,7 +108,6 @@ func TestSubscribe(t *testing.T) {
 
 		assert.NoError(t, err)
 		mockClient.AssertExpectations(t)
-
 	})
 
 	t.Run("Subscription Failure", func(t *testing.T) {

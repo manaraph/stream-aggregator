@@ -8,9 +8,10 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/stretchr/testify/require"
+
 	"github.com/manaraph/stream-aggregator/internal/domain"
 	"github.com/manaraph/stream-aggregator/internal/storage"
-	"github.com/stretchr/testify/require"
 )
 
 func TestPostgresBatchInsertAndDuplicateDelivery(t *testing.T) {

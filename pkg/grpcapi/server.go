@@ -4,9 +4,10 @@ import (
 	"io"
 	"log"
 
+	"google.golang.org/grpc"
+
 	"github.com/manaraph/stream-aggregator/pkg/events"
 	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
-	"google.golang.org/grpc"
 )
 
 type Server struct {

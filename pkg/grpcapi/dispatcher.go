@@ -5,10 +5,11 @@ import (
 	"sync"
 	"time"
 
+	"google.golang.org/protobuf/proto"
+
 	"github.com/manaraph/stream-aggregator/pkg/events"
 	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 	"github.com/manaraph/stream-aggregator/pkg/ws"
-	"google.golang.org/protobuf/proto"
 )
 
 // Dispatcher delivers events received by the gRPC services.

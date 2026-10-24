@@ -10,8 +10,10 @@ import (
 	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 )
 
-type snapshotter func() *streamv1.IngestMetricsRequest
-type reportTimes func() map[string]time.Time
+type (
+	snapshotter func() *streamv1.IngestMetricsRequest
+	reportTimes func() map[string]time.Time
+)
 
 // Handler serves the most recently received metrics snapshot. Missing values
 // are omitted until their owning service reports them.

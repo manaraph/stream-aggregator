@@ -6,10 +6,11 @@ import (
 	"strings"
 	"testing"
 
+	"google.golang.org/grpc"
+
 	ingestionmocks "github.com/manaraph/stream-aggregator/internal/services/ingestion/mocks"
 	"github.com/manaraph/stream-aggregator/pkg/broker"
 	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
-	"google.golang.org/grpc"
 )
 
 func factorySet(conn *grpc.ClientConn, b *broker.FakeBroker, store sensorStore) processorFactories {

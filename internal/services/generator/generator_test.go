@@ -10,14 +10,15 @@ import (
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"github.com/manaraph/stream-aggregator/internal/domain"
-	generatormocks "github.com/manaraph/stream-aggregator/internal/services/generator/mocks"
-	"github.com/manaraph/stream-aggregator/pkg/broker"
-	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+
+	"github.com/manaraph/stream-aggregator/internal/domain"
+	generatormocks "github.com/manaraph/stream-aggregator/internal/services/generator/mocks"
+	"github.com/manaraph/stream-aggregator/pkg/broker"
+	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 )
 
 type failingBroker struct {

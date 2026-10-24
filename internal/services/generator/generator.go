@@ -12,12 +12,13 @@ import (
 	"sync/atomic"
 	"time"
 
+	"google.golang.org/grpc"
+	"google.golang.org/protobuf/proto"
+
 	"github.com/manaraph/stream-aggregator/internal/domain"
 	"github.com/manaraph/stream-aggregator/pkg/broker"
 	"github.com/manaraph/stream-aggregator/pkg/grpcapi"
 	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
-	"google.golang.org/grpc"
-	"google.golang.org/protobuf/proto"
 )
 
 var interval time.Duration

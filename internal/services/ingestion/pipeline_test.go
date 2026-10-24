@@ -8,11 +8,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+
 	"github.com/manaraph/stream-aggregator/internal/domain"
 	ingestionmocks "github.com/manaraph/stream-aggregator/internal/services/ingestion/mocks"
 	"github.com/manaraph/stream-aggregator/pkg/broker"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
 
 type testBatchStore struct {

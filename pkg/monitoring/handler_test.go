@@ -6,8 +6,9 @@ import (
 	"testing"
 	"time"
 
-	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 	"google.golang.org/protobuf/proto"
+
+	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 )
 
 func TestHandlerExportsLatestMetricsAndReportTimes(t *testing.T) {
