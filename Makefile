@@ -14,6 +14,10 @@ help:
 	@echo "  up							- Build and run services with docker" 
 	@echo "  down						- Shut down services in docker"
 	@echo "  test						- Run tests with race detection"
+	@echo "  lint                     - Run golangci-lint"
+	@echo "  fmt-check                - Check Go formatting without changing files"
+	@echo "  fmt                      - Format Go files"
+	@echo "  check                    - Run formatting, lint, and test checks"
 	@echo "  integration-test			- Run PostgreSQL integration tests"
 	@echo "  coverage				- Run tests and show coverage"
 	@echo "  open-coverage 	- Run tests and opens coverage in the browser" 
@@ -24,6 +28,17 @@ config:
 
 test:
 	go test ./... -race
+
+lint:
+	golangci-lint run
+
+fmt-check:
+	golangci-lint fmt --diff
+
+fmt:
+	golangci-lint fmt
+
+check: fmt-check lint test
 
 generate-mocks:
 	go run github.com/vektra/mockery/v2@v2.53.5
