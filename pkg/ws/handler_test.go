@@ -22,11 +22,13 @@ func TestWebSocketHandlerBroadcast(t *testing.T) {
 	if err != nil {
 		t.Fatalf("dial error: %v", err)
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	h.Broadcast([]byte(`{"hello": "world"}`))
 
-	conn.SetReadDeadline(time.Now().Add(time.Second))
+	if err := conn.SetReadDeadline(time.Now().Add(time.Second)); err != nil {
+		t.Fatalf("set read deadline: %v", err)
+	}
 	_, msg, err := conn.ReadMessage()
 	if err != nil {
 		t.Fatalf("read error: %v", err)

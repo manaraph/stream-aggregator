@@ -37,7 +37,10 @@ func (p *Processor) initPipeline() {
 		p.writerCtx, p.writerStop = context.WithCancel(context.Background())
 	}
 
-	log.Printf("Starting ingestion pipeline: queue=%d batch_size=%d batch_interval=%s", queueSize, batchSize, batchInterval)
+	log.Printf(
+		"Starting ingestion pipeline: queue=%d batch_size=%d batch_interval=%s",
+		queueSize, batchSize, batchInterval,
+	)
 	go p.batchWriter(batchSize, batchInterval)
 	go p.queueStatus()
 }
@@ -183,21 +186,26 @@ func (p *Processor) reportQueueStatus(previousProcessed uint64, interval time.Du
 
 	p.ForwardMetrics(&streamv1.IngestMetricsRequest{
 		Queue: &streamv1.QueueMetrics{
-			Received:                    proto.Uint64(atomic.LoadUint64(&p.received)),
-			Processed:                   proto.Uint64(processed),
-			Dropped:                     proto.Uint64(dropped),
-			Used:                        proto.Uint32(uint32(used)),
-			Capacity:                    proto.Uint32(uint32(capacity)),
-			MaxUsed:                     proto.Uint32(atomic.LoadUint32(&p.maxUsed)),
-			Utilization:                 proto.Float64(percent),
-			DbBatchDurationMilliseconds: proto.Float64(float64(atomic.LoadUint64(&p.dbBatchDurationNS)) / float64(time.Millisecond)),
-			DbBatchFailures:             proto.Uint64(atomic.LoadUint64(&p.dbBatchFailures)),
-			DbBatchSize:                 proto.Uint32(atomic.LoadUint32(&p.dbBatchSize)),
-			DbRowsCommitted:             proto.Uint64(atomic.LoadUint64(&p.dbRowsCommitted)),
+			Received:    proto.Uint64(atomic.LoadUint64(&p.received)),
+			Processed:   proto.Uint64(processed),
+			Dropped:     proto.Uint64(dropped),
+			Used:        proto.Uint32(uint32(used)),
+			Capacity:    proto.Uint32(uint32(capacity)),
+			MaxUsed:     proto.Uint32(atomic.LoadUint32(&p.maxUsed)),
+			Utilization: proto.Float64(percent),
+			DbBatchDurationMilliseconds: proto.Float64(
+				float64(atomic.LoadUint64(&p.dbBatchDurationNS)) / float64(time.Millisecond),
+			),
+			DbBatchFailures: proto.Uint64(atomic.LoadUint64(&p.dbBatchFailures)),
+			DbBatchSize:     proto.Uint32(atomic.LoadUint32(&p.dbBatchSize)),
+			DbRowsCommitted: proto.Uint64(atomic.LoadUint64(&p.dbRowsCommitted)),
 		},
 		Throughput: &streamv1.ThroughputMetrics{IngestionRate: proto.Float64(rate)},
-		Grpc:       &streamv1.ConnectionMetrics{Connected: proto.Bool(p.S != nil && p.M != nil), Errors: proto.Uint32(atomic.LoadUint32(&p.grpcErrors))},
-		Broker:     &streamv1.ConnectionMetrics{Connected: proto.Bool(brokerConnected(p.B))},
+		Grpc: &streamv1.ConnectionMetrics{
+			Connected: proto.Bool(p.S != nil && p.M != nil),
+			Errors:    proto.Uint32(atomic.LoadUint32(&p.grpcErrors)),
+		},
+		Broker: &streamv1.ConnectionMetrics{Connected: proto.Bool(brokerConnected(p.B))},
 	})
 
 	return processed

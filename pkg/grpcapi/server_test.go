@@ -45,9 +45,8 @@ func (m *mockDispatcher) PublishMetrics(metrics *streamv1.IngestMetricsRequest) 
 // Mock gRPC Stream
 type mockIngestStream struct {
 	streamv1.SensorService_IngestSensorServer
-	ctx    context.Context
-	reqCh  chan *streamv1.IngestSensorRequest
-	closed bool
+	ctx   context.Context
+	reqCh chan *streamv1.IngestSensorRequest
 }
 
 type mockMetricsStream struct {

@@ -2,7 +2,6 @@ package broker
 
 import (
 	"errors"
-	"os"
 	"testing"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -41,7 +40,7 @@ func (m *MockClient) Subscribe(topic string, qos byte, callback mqtt.MessageHand
 
 func TestNewMQTTClient(t *testing.T) {
 	t.Run("Fails_When_No_Broker", func(t *testing.T) {
-		os.Setenv("MQTT_BROKER", "tcp://localhost:12345") // Non-existent port
+		t.Setenv("MQTT_BROKER", "tcp://localhost:12345") // Non-existent port
 		client, err := NewMQTTClient("clientId")
 
 		assert.Error(t, err)
@@ -49,7 +48,7 @@ func TestNewMQTTClient(t *testing.T) {
 	})
 
 	t.Run("Fails_When_No_Env", func(t *testing.T) {
-		os.Unsetenv("MQTT_BROKER")
+		t.Setenv("MQTT_BROKER", "")
 		client, err := NewMQTTClient("clientId")
 
 		assert.Nil(t, client)
@@ -116,7 +115,7 @@ func TestSubscribe(t *testing.T) {
 
 		mockClient.On("Subscribe", mock.Anything, mock.Anything, mock.Anything).Return(mockToken)
 
-		os.Setenv("MQTT_BROKER", "tcp://localhost:9999")
+		t.Setenv("MQTT_BROKER", "tcp://localhost:9999")
 		c, _ := NewMQTTClient("clientId")
 		err := c.Subscribe("invalid/topic", nil)
 

@@ -60,7 +60,7 @@ func (p *Postgres) InsertBatch(ctx context.Context, readings []domain.Sensor) er
 	if err != nil {
 		return fmt.Errorf("begin sensor batch: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	batch := &pgx.Batch{}
 	for _, reading := range readings {

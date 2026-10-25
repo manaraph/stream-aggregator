@@ -23,7 +23,11 @@ func Handler(snapshot snapshotter, reports ...reportTimes) http.Handler {
 		m := snapshot()
 		if len(reports) > 0 {
 			for service, reportedAt := range reports[0]() {
-				_, _ = fmt.Fprintf(w, "stream_aggregator_service_last_report_timestamp_seconds{service=%q} %f\n", service, float64(reportedAt.UnixNano())/float64(time.Second))
+				_, _ = fmt.Fprintf(
+					w,
+					"stream_aggregator_service_last_report_timestamp_seconds{service=%q} %f\n",
+					service, float64(reportedAt.UnixNano())/float64(time.Second),
+				)
 			}
 		}
 		if m == nil {

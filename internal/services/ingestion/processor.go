@@ -141,7 +141,9 @@ func (p *Processor) Close(ctx context.Context) error {
 	log.Println("Shutting down processor...")
 
 	if p.B != nil {
-		p.B.Close()
+		if err := p.B.Close(); err != nil {
+			log.Printf("close broker: %v", err)
+		}
 	}
 	p.callbackMu.Lock()
 	p.closing = true

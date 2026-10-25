@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"net"
-	"os"
 	"testing"
 	"time"
 
@@ -126,15 +125,15 @@ func TestPublisher_Close(t *testing.T) {
 
 	lis, err := net.Listen("tcp", "127.0.0.1:0")
 	assert.NoError(t, err)
-	defer lis.Close()
+	defer func() { _ = lis.Close() }()
 
 	s := grpc.NewServer()
-	go s.Serve(lis)
+	go func() { _ = s.Serve(lis) }()
 	defer s.Stop()
 
 	conn, err := grpc.NewClient(lis.Addr().String(), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	assert.NoError(t, err)
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	pubWithConn := &Publisher{GRPC: conn}
 	assert.NoError(t, pubWithConn.Close())
@@ -142,8 +141,8 @@ func TestPublisher_Close(t *testing.T) {
 
 func TestNewPublisherFromEnv(t *testing.T) {
 	t.Run("Fails when env vars are missing", func(t *testing.T) {
-		os.Unsetenv("GENERATOR_ID")
-		os.Unsetenv("MQTT_BROKER")
+		t.Setenv("GENERATOR_ID", "")
+		t.Setenv("MQTT_BROKER", "")
 
 		pub, err := NewPublisher()
 		assert.Nil(t, pub)
@@ -151,9 +150,8 @@ func TestNewPublisherFromEnv(t *testing.T) {
 	})
 
 	t.Run("Fails with invalid broker URL", func(t *testing.T) {
-		os.Setenv("GENERATOR_ID", "test-gen")
-		os.Setenv("MQTT_BROKER", "tcp://invalid-address:9999")
-		defer os.Clearenv()
+		t.Setenv("GENERATOR_ID", "test-gen")
+		t.Setenv("MQTT_BROKER", "tcp://invalid-address:9999")
 
 		pub, err := NewPublisher()
 		assert.Nil(t, pub)

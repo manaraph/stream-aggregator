@@ -18,7 +18,7 @@ func TestNewClient(t *testing.T) {
 
 	s := grpc.NewServer()
 	streamv1.RegisterSensorServiceServer(s, &grpcapi.Server{})
-	go s.Serve(lis)
+	go func() { _ = s.Serve(lis) }()
 	defer s.Stop()
 
 	client, conn, err := grpcapi.NewClient(lis.Addr().String())
@@ -29,7 +29,9 @@ func TestNewClient(t *testing.T) {
 		t.Fatal("expected client")
 	}
 
-	conn.Close()
+	if err := conn.Close(); err != nil {
+		t.Errorf("close client connection: %v", err)
+	}
 }
 
 func TestConnectGatewayRequiresAddress(t *testing.T) {
