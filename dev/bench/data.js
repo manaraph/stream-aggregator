@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791916730769,
+  "lastUpdate": 1792918913029,
   "repoUrl": "https://github.com/manaraph/stream-aggregator",
   "entries": {
     "Benchmark": [
@@ -788,6 +788,50 @@ window.BENCHMARK_DATA = {
             "value": 3,
             "unit": "allocs/op",
             "extra": "4858718 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "manaraph",
+            "username": "manaraph"
+          },
+          "committer": {
+            "name": "manaraph",
+            "username": "manaraph"
+          },
+          "id": "055a9ab4c3ad5a8b44cad54b955dbc0ce77ab0a7",
+          "message": "Add lint rules, CI lint checks and fix lint errors",
+          "timestamp": "2026-10-13T18:38:12Z",
+          "url": "https://github.com/manaraph/stream-aggregator/pull/14/commits/055a9ab4c3ad5a8b44cad54b955dbc0ce77ab0a7"
+        },
+        "date": 1792918912440,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkHubBroadcast",
+            "value": 181.9,
+            "unit": "ns/op\t      40 B/op\t       3 allocs/op",
+            "extra": "6386588 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - ns/op",
+            "value": 181.9,
+            "unit": "ns/op",
+            "extra": "6386588 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - B/op",
+            "value": 40,
+            "unit": "B/op",
+            "extra": "6386588 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - allocs/op",
+            "value": 3,
+            "unit": "allocs/op",
+            "extra": "6386588 times\n4 procs"
           }
         ]
       }
