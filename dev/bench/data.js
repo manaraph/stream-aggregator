@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1792918913029,
+  "lastUpdate": 1792919521640,
   "repoUrl": "https://github.com/manaraph/stream-aggregator",
   "entries": {
     "Benchmark": [
@@ -832,6 +832,54 @@ window.BENCHMARK_DATA = {
             "value": 3,
             "unit": "allocs/op",
             "extra": "6386588 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "manaraph225@gmail.com",
+            "name": "Manasseh Omachonu",
+            "username": "manaraph"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "cbc639ae50b43ddd72b37f9787ae74d1c65b6deb",
+          "message": "Merge pull request #14 from manaraph/en-lint-checks\n\nAdd lint rules, CI lint checks and fix lint errors",
+          "timestamp": "2026-10-25T10:10:08+01:00",
+          "tree_id": "7e0d8bb5191985be54cb8297e2c5e0a040b23069",
+          "url": "https://github.com/manaraph/stream-aggregator/commit/cbc639ae50b43ddd72b37f9787ae74d1c65b6deb"
+        },
+        "date": 1792919521396,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkHubBroadcast",
+            "value": 246.2,
+            "unit": "ns/op\t      40 B/op\t       3 allocs/op",
+            "extra": "4575844 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - ns/op",
+            "value": 246.2,
+            "unit": "ns/op",
+            "extra": "4575844 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - B/op",
+            "value": 40,
+            "unit": "B/op",
+            "extra": "4575844 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkHubBroadcast - allocs/op",
+            "value": 3,
+            "unit": "allocs/op",
+            "extra": "4575844 times\n4 procs"
           }
         ]
       }
