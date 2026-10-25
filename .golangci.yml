@@ -1,0 +1,37 @@
+version: "2"
+
+run:
+  timeout: 5m
+  modules-download-mode: readonly
+
+linters:
+  default: none
+  enable:
+    - errcheck   
+    - govet      
+    - ineffassign
+    - staticcheck
+    - unused     
+    - lll        
+
+  settings:
+    lll:
+      line-length: 120
+      tab-width: 1
+
+formatters:
+  enable:
+    - gofumpt
+    - gci
+  settings:
+    gofumpt:
+      module-path: github.com/manaraph/stream-aggregator
+      extra:
+        group-params: true
+        clothe-returns: true
+        balance-calls: true
+    gci:
+      sections:
+        - standard
+        - default
+        - prefix(github.com/manaraph/stream-aggregator)

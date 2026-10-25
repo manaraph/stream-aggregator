@@ -29,6 +29,7 @@ func (f *FakeBroker) Publish(topic string, data []byte) error {
 	f.Messages <- data
 	return nil
 }
+
 func (f *FakeBroker) Subscribe(topic string, handler func(mqtt.Client, mqtt.Message)) error {
 	go func() {
 		for msg := range f.Messages {

@@ -7,11 +7,12 @@ import (
 	"os"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"google.golang.org/grpc"
+
 	"github.com/manaraph/stream-aggregator/internal/storage"
 	"github.com/manaraph/stream-aggregator/pkg/broker"
 	"github.com/manaraph/stream-aggregator/pkg/grpcapi"
 	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
-	"google.golang.org/grpc"
 )
 
 type processorFactories struct {

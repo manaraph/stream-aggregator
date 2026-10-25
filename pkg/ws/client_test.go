@@ -31,10 +31,10 @@ func TestWritePumpRelaysMessagesToSocket(t *testing.T) {
 	wsURL := "ws" + server.URL[len("http"):]
 	conn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
 	require.NoError(t, err)
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	serverConn := <-serverConnCh
-	defer serverConn.Close()
+	defer func() { _ = serverConn.Close() }()
 
 	client := NewClient(NewHub(), conn)
 	go client.writePump()

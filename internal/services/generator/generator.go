@@ -12,12 +12,13 @@ import (
 	"sync/atomic"
 	"time"
 
+	"google.golang.org/grpc"
+	"google.golang.org/protobuf/proto"
+
 	"github.com/manaraph/stream-aggregator/internal/domain"
 	"github.com/manaraph/stream-aggregator/pkg/broker"
 	"github.com/manaraph/stream-aggregator/pkg/grpcapi"
 	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
-	"google.golang.org/grpc"
-	"google.golang.org/protobuf/proto"
 )
 
 var interval time.Duration
@@ -86,8 +87,13 @@ func (p *Publisher) reportMetrics(previousPublished uint64, duration time.Durati
 		brokerIsConnected = status.Connected()
 	}
 	metrics := &streamv1.IngestMetricsRequest{
-		Throughput: &streamv1.ThroughputMetrics{PublishRate: proto.Float64(float64(published-previousPublished) / duration.Seconds())},
-		Broker:     &streamv1.ConnectionMetrics{Connected: proto.Bool(brokerIsConnected), Errors: proto.Uint32(atomic.LoadUint32(&p.publishErr))},
+		Throughput: &streamv1.ThroughputMetrics{
+			PublishRate: proto.Float64(float64(published-previousPublished) / duration.Seconds()),
+		},
+		Broker: &streamv1.ConnectionMetrics{
+			Connected: proto.Bool(brokerIsConnected),
+			Errors:    proto.Uint32(atomic.LoadUint32(&p.publishErr)),
+		},
 	}
 	if err := p.M.Send(metrics); err != nil {
 		log.Println("gRPC metrics send failed:", err)

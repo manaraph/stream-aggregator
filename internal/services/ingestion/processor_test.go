@@ -9,13 +9,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"google.golang.org/protobuf/proto"
+
 	"github.com/manaraph/stream-aggregator/internal/domain"
 	ingestionmocks "github.com/manaraph/stream-aggregator/internal/services/ingestion/mocks"
 	"github.com/manaraph/stream-aggregator/pkg/broker"
 	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-	"google.golang.org/protobuf/proto"
 )
 
 func TestProcessor_FullLifecycle(t *testing.T) {

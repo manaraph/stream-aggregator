@@ -6,8 +6,9 @@ import (
 	"testing"
 	"time"
 
-	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 	"google.golang.org/protobuf/proto"
+
+	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 )
 
 func TestHandlerExportsLatestMetricsAndReportTimes(t *testing.T) {
@@ -24,8 +25,12 @@ func TestHandlerExportsLatestMetricsAndReportTimes(t *testing.T) {
 			GrpcRate: proto.Float64(98), WebsocketRate: proto.Float64(97),
 		},
 		Latency: &streamv1.LatencyMetrics{AverageMs: proto.Uint32(2), P95Ms: proto.Uint32(3), MaxMs: proto.Uint32(4)},
-		Grpc:    &streamv1.ConnectionMetrics{Connected: proto.Bool(true), Reconnects: proto.Uint32(1), Errors: proto.Uint32(2)},
-		Broker:  &streamv1.ConnectionMetrics{Connected: proto.Bool(false), Reconnects: proto.Uint32(3), Errors: proto.Uint32(4)},
+		Grpc: &streamv1.ConnectionMetrics{
+			Connected: proto.Bool(true), Reconnects: proto.Uint32(1), Errors: proto.Uint32(2),
+		},
+		Broker: &streamv1.ConnectionMetrics{
+			Connected: proto.Bool(false), Reconnects: proto.Uint32(3), Errors: proto.Uint32(4),
+		},
 		Runtime: &streamv1.RuntimeMetrics{
 			UptimeSeconds: proto.Uint64(12), Goroutines: proto.Uint32(13), MemoryBytes: proto.Uint64(14),
 			WebsocketClients: proto.Uint32(15), BackpressureLevel: proto.Uint32(16), WebsocketDropped: proto.Uint64(17),

@@ -11,11 +11,12 @@ import (
 	"sync/atomic"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	"github.com/manaraph/stream-aggregator/internal/domain"
 	"github.com/manaraph/stream-aggregator/pkg/broker"
 	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
-	"google.golang.org/grpc"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type SensorStreamClient interface {
@@ -120,7 +121,6 @@ func (p *Processor) ForwardEvent(data domain.Sensor) {
 		MeasurementType: data.MeasurementType,
 		Unit:            data.Unit,
 	})
-
 	if err != nil {
 		log.Println("gRPC send failed:", err)
 		atomic.AddUint32(&p.grpcErrors, 1)
@@ -141,7 +141,9 @@ func (p *Processor) Close(ctx context.Context) error {
 	log.Println("Shutting down processor...")
 
 	if p.B != nil {
-		p.B.Close()
+		if err := p.B.Close(); err != nil {
+			log.Printf("close broker: %v", err)
+		}
 	}
 	p.callbackMu.Lock()
 	p.closing = true

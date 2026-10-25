@@ -6,10 +6,12 @@ import (
 	"strings"
 	"testing"
 
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+
 	ingestionmocks "github.com/manaraph/stream-aggregator/internal/services/ingestion/mocks"
 	"github.com/manaraph/stream-aggregator/pkg/broker"
 	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
-	"google.golang.org/grpc"
 )
 
 func factorySet(conn *grpc.ClientConn, b *broker.FakeBroker, store sensorStore) processorFactories {
@@ -34,13 +36,18 @@ func TestNewProcessorRejectsMissingID(t *testing.T) {
 }
 
 func TestNewProcessorSuccess(t *testing.T) {
-	conn, err := grpc.NewClient("passthrough:///constructor-test", grpc.WithInsecure())
+	conn, err := grpc.NewClient(
+		"passthrough:///constructor-test", grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
 	store := NewMockSensorStore(t)
 	store.EXPECT().Close()
-	p, err := newProcessor(context.Background(), "test-ingestor", "postgres://unused", factorySet(conn, broker.NewFakeBroker(), store))
+	p, err := newProcessor(
+		context.Background(), "test-ingestor", "postgres://unused",
+		factorySet(conn, broker.NewFakeBroker(), store),
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -59,7 +66,9 @@ func TestNewProcessorFactoryFailuresCleanUp(t *testing.T) {
 		wantError string
 	}{
 		{"gateway", func(f *processorFactories) {
-			f.connectGateway = func() (streamv1.SensorServiceClient, *grpc.ClientConn, error) { return nil, nil, errors.New("gateway") }
+			f.connectGateway = func() (streamv1.SensorServiceClient, *grpc.ClientConn, error) {
+				return nil, nil, errors.New("gateway")
+			}
 		}, "gateway"},
 		{"broker", func(f *processorFactories) {
 			f.newBroker = func(string) (broker.Broker, error) { return nil, errors.New("broker") }
@@ -80,7 +89,10 @@ func TestNewProcessorFactoryFailuresCleanUp(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			conn, err := grpc.NewClient("passthrough:///constructor-failure", grpc.WithInsecure())
+			conn, err := grpc.NewClient(
+				"passthrough:///constructor-failure",
+				grpc.WithTransportCredentials(insecure.NewCredentials()),
+			)
 			if err != nil {
 				t.Fatal(err)
 			}

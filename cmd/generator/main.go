@@ -19,7 +19,11 @@ func main() {
 		log.Println("connection failed: ", err)
 		return
 	}
-	defer p.Close()
+	defer func() {
+		if err := p.Close(); err != nil {
+			log.Printf("close publisher: %v", err)
+		}
+	}()
 
 	p.Run(ctx)
 }

@@ -7,15 +7,16 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/manaraph/stream-aggregator/pkg/events"
-	"github.com/manaraph/stream-aggregator/pkg/grpcapi"
-	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
-	"github.com/manaraph/stream-aggregator/pkg/ws"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"github.com/manaraph/stream-aggregator/pkg/events"
+	"github.com/manaraph/stream-aggregator/pkg/grpcapi"
+	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
+	"github.com/manaraph/stream-aggregator/pkg/ws"
 )
 
 type mockDispatcher struct {
@@ -44,9 +45,8 @@ func (m *mockDispatcher) PublishMetrics(metrics *streamv1.IngestMetricsRequest) 
 // Mock gRPC Stream
 type mockIngestStream struct {
 	streamv1.SensorService_IngestSensorServer
-	ctx    context.Context
-	reqCh  chan *streamv1.IngestSensorRequest
-	closed bool
+	ctx   context.Context
+	reqCh chan *streamv1.IngestSensorRequest
 }
 
 type mockMetricsStream struct {

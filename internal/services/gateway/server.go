@@ -1,17 +1,20 @@
 package gateway
 
 import (
+	"errors"
+	"log"
 	"net"
 	"net/http"
 	"runtime"
 	"time"
 
+	"google.golang.org/grpc"
+	"google.golang.org/protobuf/proto"
+
 	"github.com/manaraph/stream-aggregator/pkg/grpcapi"
 	"github.com/manaraph/stream-aggregator/pkg/monitoring"
 	streamv1 "github.com/manaraph/stream-aggregator/pkg/pb/stream/v1"
 	"github.com/manaraph/stream-aggregator/pkg/ws"
-	"google.golang.org/grpc"
-	"google.golang.org/protobuf/proto"
 )
 
 type Gateway struct {
@@ -33,18 +36,28 @@ func NewGateway(grpcAddr, httpAddr string) (*Gateway, error) {
 	grpcapi.RegisterServices(grpcServer, dispatcher)
 
 	go hub.Run()
-	go grpcServer.Serve(lis)
+	go func() {
+		if err := grpcServer.Serve(lis); err != nil {
+			log.Printf("gRPC server stopped: %v", err)
+		}
+	}()
 	go publishMetrics(hub, dispatcher)
 
 	mux := http.NewServeMux()
 	hub.RegisterRoute(mux)
 	mux.Handle("/metrics", monitoring.Handler(dispatcher.MetricsSnapshot, dispatcher.LastReports))
 	mux.HandleFunc("/health", func(w http.ResponseWriter, _ *http.Request) {
-		w.Write([]byte("ok"))
+		if _, err := w.Write([]byte("ok")); err != nil {
+			log.Printf("write health response: %v", err)
+		}
 	})
 
 	httpServer := &http.Server{Addr: httpAddr, Handler: mux}
-	go httpServer.ListenAndServe()
+	go func() {
+		if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Printf("HTTP server stopped: %v", err)
+		}
+	}()
 
 	return &Gateway{Hub: hub, GrpcServer: grpcServer, HttpServer: httpServer}, nil
 }

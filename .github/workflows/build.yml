@@ -59,6 +59,14 @@ jobs:
       - name: Download dependencies
         run: go mod download
 
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.13
+
+      - name: Check Go formatting
+        run: make fmt-check
+
       - name: Run Tests with Race Detector
         run: go list ./... | grep -v "proto" | xargs -r go test -v -race
 
